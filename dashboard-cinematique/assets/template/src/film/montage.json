@@ -7,7 +7,7 @@
     {
       "id": "ouverture-kpi",
       "duree": 90,
-      "horloges": {"entete": 0, "kpi1": 0, "laterale": 0},
+      "horloges": {"entete": -6, "kpi1": -6, "laterale": -6},
       "camera": {
         "cible": {"de": {"x": 340, "y": 222}, "a": {"x": 430, "y": 200}},
         "zoom": {"de": 3.9, "a": 4.15},
@@ -19,19 +19,19 @@
     {
       "id": "courbe-revenus",
       "duree": 90,
-      "horloges": {"courbe": 0},
+      "horloges": {"courbe": -6},
       "camera": {
         "cible": {"de": {"x": 600, "y": 478}, "a": {"x": 720, "y": 452}},
         "zoom": {"de": 4.2, "a": 4.45},
         "inclinaison": {"de": 48, "a": 48},
         "rotation": {"de": -19, "a": -21}
       },
-      "son": [{"type": "montee", "a": 8, "duree": 40}]
+      "son": [{"type": "montee", "a": 2, "duree": 34}]
     },
     {
       "id": "usage-rouge",
       "duree": 90,
-      "horloges": {"usage": 0},
+      "horloges": {"usage": -6},
       "camera": {
         "cible": {"de": {"x": 1210, "y": 468}, "a": {"x": 1290, "y": 452}},
         "zoom": {"de": 3.2, "a": 3.4},
@@ -43,7 +43,7 @@
     {
       "id": "barres-divergentes",
       "duree": 90,
-      "horloges": {"divergent": 0},
+      "horloges": {"divergent": -6},
       "camera": {
         "cible": {"de": {"x": 905, "y": 812}, "a": {"x": 965, "y": 800}},
         "zoom": {"de": 3.7, "a": 3.9},
@@ -51,12 +51,12 @@
         "rotation": {"de": -17, "a": -19},
         "nettete": {"demiLargeur": 15, "fondu": 24}
       },
-      "son": [{"type": "arpege", "a": 8, "duree": 28}]
+      "son": [{"type": "arpege", "a": 2, "duree": 28}]
     },
     {
       "id": "barre-haute-bouton",
       "duree": 90,
-      "horloges": {"haute": 0},
+      "horloges": {"haute": -12},
       "camera": {
         "cible": {"de": {"x": 1390, "y": 40}, "a": {"x": 1470, "y": 32}},
         "zoom": {"de": 4.8, "a": 5.1},

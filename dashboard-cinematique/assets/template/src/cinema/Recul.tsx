@@ -5,7 +5,7 @@ import { ease, mix, prog } from "../lib/anim";
 /**
  * Le recul final (vidéos 2 et 3) : coupe franche sur le tableau de bord ENTIER, à plat,
  * de face, centré sur fond noir, sur ≈ 50–64 % de la largeur de l’image.
- * Il apparaît en fondu depuis le noir, grossit à peine (respiration), puis s'éteint
+ * Il arrive déjà à moitié visible (jamais de noir à la coupe), grossit à peine (respiration), puis s’éteint
  * pendant que le logo se trace par-dessus.
  */
 export const Recul: React.FC<{
@@ -17,7 +17,8 @@ export const Recul: React.FC<{
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const echelle = (width * part) / monde.largeur;
-  const entree = prog(frame, 0, 10, ease.sortie);
+  // pas de noir à la coupe : le recul arrive déjà à moitié visible et finit d'apparaître en 12 images
+  const entree = mix(0.45, 1, prog(frame, 0, 12, ease.sortie));
   const respiration = mix(0.985, 1.03, prog(frame, 0, sortie.debut + sortie.duree, ease.derive));
   const extinction = 1 - prog(frame, sortie.debut, sortie.duree, ease.doux);
   return (

@@ -21,7 +21,7 @@ Méthode : planches-contacts à 1, 4 et 15 i/s, détection des coupes (`ffmpeg s
   V1 3,00 / 6,03 / 9,03 / 12,07 · V2 3,30 / 6,10 / 9,20 / 12,67 · V3 3,03 / 6,07 / 9,10 / 12,13 / 15,17 · V4 2,90 / 5,83 / 8,77 / 11,70 / 14,63 · V5 4,30 / 8,73 / 10,53 / 13,20 / 17,97.
   → plans de **88 à 92 images**. Seule V5 varie (1,8 à 4,8 s).
 - **Un plan = UN composant** de l'interface : une courbe, une carte KPI, une liste, un bouton, une barre de progression. On ne voit jamais deux idées à la fois.
-- **Aucune transition** : la coupe est franche, mais chaque plan commence **flou et sombre** puis se met au point en ~0,4–0,5 s (12–15 images). C'est ça qui sert de transition.
+- **Aucune transition** : la coupe est franche, mais chaque plan commence **flou et un peu plus sombre (jamais noir : il est lisible dès la 1re image)** puis se met au point en ~0,4 s (12 images). La caméra est déjà en mouvement à la coupe. C'est ça qui sert de transition. Vérifié avec `scripts/controle.mjs` : aucune plongée de luminosité aux coupes des références.
 
 ### Caméra
 - L'UI est un **plan posé en 3D** : forte inclinaison (rotateX ≈ 45–60°), rotation dans le plan (rotateZ ≈ -15 à -35°). Les lignes de l'interface partent en diagonale vers le haut à droite et fuient vers le haut.

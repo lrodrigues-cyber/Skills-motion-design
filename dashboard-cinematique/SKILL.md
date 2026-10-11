@@ -18,9 +18,9 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **Format** | 16:9, 1920×1080, 30 i/s, **~20 s** (19,5–21,5 s) | Durée et cadre de toutes les références |
 | **Structure** | **5 plans rapprochés de 90 images** (≈ 3 s) en coupe franche, puis la fin (~4 s) | Coupes relevées à 2,9 / 5,8 / 8,8 / 11,7 / 14,6 s, etc. |
 | **Un plan = un composant** | Une courbe, *ou* une carte KPI, *ou* une liste, *ou* un bouton. Jamais deux idées | Le spectateur lit une seule chose à la fois |
-| **Caméra** | UI posée en 3D : inclinaison 45–56°, rotation -17 à -33°, zoom 3,2–5. **Dérive lente continue** (la cible glisse de 70–140 px du monde, zoom +5 %) | L'interface devient un objet. Le mouvement ne s'arrête jamais |
+| **Caméra** | UI posée en 3D : inclinaison 45–56°, rotation -17 à -33°, zoom 3,2–5. **Dérive lente à vitesse constante** (la cible glisse de 70–140 px du monde, zoom +5 %), sans accélérer ni freiner | L'interface devient un objet. Le mouvement ne s'arrête jamais : chaque coupe se fait **en mouvement** |
 | **Angle** | Change à chaque plan (inclinaison/rotation différentes) | Évite la monotonie sans transition |
-| **Mise au point** | Chaque plan s'ouvre **flou et sombre** et devient net en ~15 images | C'est la seule « transition » du style |
+| **Transition** | Coupe franche. Le nouveau plan arrive **déjà visible** (≈ 60 % de luminosité, flou) et devient net en ~12 images. **Jamais de passage par le noir** | Une plongée au noir à chaque coupe = clignotement saccadé toutes les 3 s |
 | **Profondeur de champ** | Bande nette horizontale au centre, flou **progressif** (3 niveaux : net → léger → fort, 11 px max en 1080p) et le lointain/premier plan qui **tombent dans l'ombre** | Signature macro. Un flou brutal ou lumineux fait « tache » : le flou ne doit jamais attirer l'œil plus que le sujet |
 | **Lumière** | Accents néon avec **halo sobre** ; **liseré** lumineux qui file sous le bord d'une carte (rétro-éclairage, derrière la carte) ; texte émissif ; bordure lumineuse ; bouton à teinte tournante. **Pas de faisceaux ni de rayons** qui montent du plan : ils font artificiel | C'est la seule source de couleur. La lumière doit rester naturelle et discrète |
 | **Matière** | Gros chiffres en **relief** (légère épaisseur), bout **hachuré** dans la même capsule que la barre (jamais par-dessus), texte toujours net | Vu en gros plan dans les références (V3, V4) |
@@ -28,7 +28,7 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **Couleurs** | Fond `#070708`, cartes `#111114`→`#16161a`, bords blanc 7 %, texte blanc 92 / 55 / 32 %. Accents : cyan, bleu électrique, menthe, vert, rouge-rose, magenta, ambre, violet | Tout est désaturé sauf ce qui brille |
 | **UI** | Vraie interface à **taille réelle** (texte 11–15 px, chiffres 28–46 px), contenu réaliste. C'est la caméra qui grossit | Les tailles d'app réelle donnent l'authenticité |
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
-| **Rythme interne** | 0–15 mise au point · 8–12 1er élément · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Relevé sur les 5 vidéos |
+| **Rythme interne** | Il se passe quelque chose **dès la coupe** : les animations du plan sont pré-lancées (horloges négatives, ex. `-6`), le sujet est déjà là · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Un plan qui commence vide (0,3–0,6 s sans rien) casse la dynamique |
 | **Fin** | **Pas de logo par défaut** (choix de l'utilisateur). `recul` : l'UI entière à plat (50–64 % de la largeur) qui respire ~2,5 s puis s'éteint ; ou `barre` (gros plan ⌘K/cloche/bouton qui s'éteint) ; ou `aucune`. Le logo tracé à la comète bleue (V1–V4) reste disponible avec `"logo": true`, seulement si on le demande | V2, V3 = recul ; V1, V4 = barre ; V5 = aucune |
 | **Son** | Musique originale sur **un seul accord** (bourdon sur la tonique, sub profond 30–60 Hz, nappe large, motif en doubles-croches ~92 BPM). L'**arrangement monte plan après plan** (caisse douce au 2e plan, scintillement au 4e, filtre qui s'ouvre). 2–3 effets **musicaux** calés à l'image (montée tonale, arpège qui monte avec les barres, souffle). À la révélation : souffle inversé → la musique s'arrête net → impact grave → traîne → silence. Son sombre (rien de brillant au-dessus de 8 kHz), stéréo large, aucun clic d'UI ni bruit aux coupes | Mesuré sur les 5 références : voir `references/recette-son.md` |
 
@@ -87,7 +87,7 @@ Un plan :
 {
   "id": "courbe-revenus",
   "duree": 90,
-  "horloges": { "courbe": 0 },
+  "horloges": { "courbe": -6 },
   "camera": {
     "cible": { "de": { "x": 600, "y": 478 }, "a": { "x": 720, "y": 452 } },
     "zoom": { "de": 4.2, "a": 4.45 },
@@ -95,10 +95,10 @@ Un plan :
     "rotation": { "de": -19, "a": -21 },
     "nettete": { "demiLargeur": 7, "fondu": 20 }
   },
-  "son": [{ "type": "montee", "a": 8, "duree": 40 }]
+  "son": [{ "type": "montee", "a": 2, "duree": 34 }]
 }
 ```
-- `horloges` : les blocs qui s'animent dans ce plan (valeur = décalage en images).
+- `horloges` : les blocs qui s'animent dans ce plan (valeur = décalage en images). Mets une valeur **négative** (-6 ; -12 pour la barre du haut) pour que l'animation soit déjà lancée à la coupe : jamais de début de plan vide.
 - `cible` : coordonnées du **monde** (px). Pars de `CENTRES` et décale vers le début de l'action, pour que la caméra glisse dans le sens de lecture.
 
 Cadrages qui fonctionnent (testés) :
@@ -129,10 +129,11 @@ npx tsc --noEmit
 REMOTION_CONCURRENCY=4 npx remotion render DashboardFilm out/brouillon.mp4 --scale=0.5 --crf=20 --x264-preset=veryfast
 node scripts/planche.mjs out/brouillon.mp4 --pas 0.5
 node scripts/planche.mjs out/brouillon.mp4 --ref <reference.mp4> --pas 0.75    # si une référence existe
+node scripts/controle.mjs out/brouillon.mp4     # fluidité : images ratées, plongées au noir, arrêts (doit dire « aucun problème »)
 ```
 Lis la planche et vérifie :
 - [ ] Chaque plan montre **un seul** composant, qui remplit l'image et reste lisible dans la bande nette
-- [ ] Chaque plan s'ouvre flou et sombre, puis devient net ; la caméra bouge du début à la fin
+- [ ] Transitions fluides : `controle.mjs` ne signale rien ; chaque plan arrive visible et flou puis devient net, sans noir ; la caméra bouge du début à la fin ; il se passe quelque chose dès la coupe
 - [ ] Les accents brillent (halo sobre), aucun faisceau ni rayon, rien d'autre n'est coloré
 - [ ] Aucun flou qui « fait tache » : le lointain et le premier plan sont sombres et doux, aucun élément flou lumineux (badge, texte, glow) n'attire l'œil hors de la zone nette, aucun flou géant pendant les apparitions
 - [ ] Aucune anomalie graphique : rien ne passe par-dessus un texte, rien ne dépasse d'une carte, pas de double contour ni de motif qui transparaît (vérifier aussi le recul à 100 %)

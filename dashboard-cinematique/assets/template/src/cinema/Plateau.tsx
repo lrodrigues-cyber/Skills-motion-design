@@ -46,14 +46,16 @@ export const Plateau: React.FC<PlateauProps> = ({
   rotation = { de: -24, a: -24 },
   focale = 1500,
   nettete = {},
-  entree = 15,
+  entree = 12,
   duree = PLAN,
   surEchantillonnage,
   children,
 }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
-  const t = prog(frame, 0, duree, ease.derive);
+  // Dérive à VITESSE CONSTANTE : la caméra est déjà en mouvement à la coupe et l'est encore
+  // à la coupe suivante (une dérive qui accélère puis freine donne des coupes « figées », saccadées).
+  const t = prog(frame, 0, duree, ease.lineaire);
 
   const cx = mix(cible.de.x, cible.a.x, t);
   const cy = mix(cible.de.y, cible.a.y, t);
@@ -64,26 +66,30 @@ export const Plateau: React.FC<PlateauProps> = ({
 
   const { centre = 50, demiLargeur = 8, fondu = 22, flou = 11, angle = 180 } = nettete;
 
-  // Mise au point d'ouverture : chaque plan commence flou et sombre puis se révèle.
+  // Mise au point d'ouverture : le plan arrive DÉJÀ VISIBLE, flou et un peu sombre, et devient
+  // net en ~12 images (vidéos de référence). Jamais de passage par le noir : ça clignote à chaque coupe.
   const pEntree = prog(frame, 0, entree, ease.sortie);
-  const flouEntree = (1 - pEntree) * 14;
-  const lumiere = mix(0.18, 1, prog(frame, 0, entree * 1.4, ease.sortie));
+  const flouEntree = (1 - pEntree) * 9;
+  const lumiere = mix(0.62, 1, pEntree);
 
-  const monde3D = (
+  // Le monde rendu à une résolution donnée (sur-échantillonnage). Les couches floues n'ont pas
+  // besoin de la pleine résolution : les dessiner petit allège énormément le rendu et évite les
+  // tuiles non dessinées (rectangles noirs) quand la mémoire du navigateur sature.
+  const monde3D = (r: number) => (
     <AbsoluteFill style={{ perspective: focale, perspectiveOrigin: "50% 50%" }}>
       <div
         style={{
           position: "absolute",
-          left: width / 2 - cx * Z,
-          top: height / 2 - cy * Z,
-          width: monde.largeur * Z,
-          height: monde.hauteur * Z,
-          transformOrigin: `${cx * Z}px ${cy * Z}px`,
-          transform: `rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z / Z})`,
+          left: width / 2 - cx * r,
+          top: height / 2 - cy * r,
+          width: monde.largeur * r,
+          height: monde.hauteur * r,
+          transformOrigin: `${cx * r}px ${cy * r}px`,
+          transform: `rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z / r})`,
           transformStyle: "preserve-3d",
         }}
       >
-        <div style={{ position: "relative", zoom: Z, width: monde.largeur, height: monde.hauteur, transformStyle: "preserve-3d" }}>
+        <div style={{ position: "relative", zoom: r, width: monde.largeur, height: monde.hauteur, transformStyle: "preserve-3d" }}>
           {children}
         </div>
       </div>
@@ -104,12 +110,12 @@ export const Plateau: React.FC<PlateauProps> = ({
   return (
     <AbsoluteFill style={{ filter: `brightness(${lumiere})` }}>
       {/* très flou : tout ce qui est loin du plan de mise au point */}
-      <AbsoluteFill style={{ filter: `blur(${flou + flouEntree * 0.5}px)` }}>{monde3D}</AbsoluteFill>
+      <AbsoluteFill style={{ filter: `blur(${flou + flouEntree * 0.5}px)` }}>{monde3D(1)}</AbsoluteFill>
       {/* légèrement flou : la transition */}
-      <AbsoluteFill style={{ WebkitMaskImage: masqueMoyen, maskImage: masqueMoyen, filter: `blur(${flou * 0.35 + flouEntree * 0.6}px)` }}>{monde3D}</AbsoluteFill>
+      <AbsoluteFill style={{ WebkitMaskImage: masqueMoyen, maskImage: masqueMoyen, filter: `blur(${flou * 0.35 + flouEntree * 0.6}px)` }}>{monde3D(Math.min(2, Z))}</AbsoluteFill>
       {/* net : la bande de mise au point */}
       <AbsoluteFill style={{ WebkitMaskImage: masqueNet, maskImage: masqueNet, filter: flouEntree > 0.05 ? `blur(${flouEntree}px)` : undefined }}>
-        {monde3D}
+        {monde3D(Z)}
       </AbsoluteFill>
       <AbsoluteFill style={{ background: ombre, pointerEvents: "none" }} />
     </AbsoluteFill>
