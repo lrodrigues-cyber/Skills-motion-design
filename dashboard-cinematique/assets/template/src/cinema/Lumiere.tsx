@@ -4,7 +4,7 @@ import { neon, type Neon } from "../style/tokens";
 
 // Toute la lumière du style passe par ici. Cinq effets relevés dans les références :
 // 1. halo (bloom) autour des éléments d'accent      → halo(), haloTexte()
-// 2. rayons volumétriques qui montent du plan        → <Rayons/>
+// 2. lumière qui monte du plan (volumétrique douce)  → <Faisceau/> (point/icône), <Brume/> (barre)
 // 3. traînée lumineuse qui file le long d'une carte  → <Trainee/>
 // 4. texte/icône émissif blanc                       → haloTexte("blanc")
 // 5. bordure parcourue par une lumière dégradée      → <BordureLumineuse/>
@@ -47,74 +47,117 @@ export const remplissageNeon = (n: Neon, sens: "horizontal" | "vertical" = "vert
 export const couleurAlpha = alpha;
 
 /**
- * Rayons volumétriques : un voile de lumière qui se dresse perpendiculairement au plan
- * (vu dans les références au-dessus de la barre rouge « 91% used », du bouton « Done »,
- * des barres vertes). Le parent doit garder `transformStyle: "preserve-3d"`.
+ * Faisceau : cône de lumière DOUX qui monte perpendiculairement au plan, comme la lumière
+ * qui sort de l'icône d'alerte (vidéo 4) ou du bouton « Done » (vidéo 5).
+ * Aucune rayure, aucun bord : un cœur étroit + un halo large, très flous, qui s'effacent
+ * vers le haut et sur les côtés. Le parent doit garder `transformStyle: "preserve-3d"`.
  */
-export const Rayons: React.FC<{
+export const Faisceau: React.FC<{
+  couleur: Neon;
+  largeur: number; // largeur de la source (px du monde)
+  hauteur?: number;
+  intensite?: number; // 0→1, animable
+  style?: React.CSSProperties;
+}> = ({ couleur, largeur, hauteur = 60, intensite = 1, style }) => {
+  const c = neon[couleur];
+  const l = largeur * 2.2;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: largeur / 2 - l / 2,
+        bottom: "40%",
+        width: l,
+        height: hauteur,
+        transformOrigin: "50% 100%",
+        transform: "rotateX(-90deg)",
+        pointerEvents: "none",
+        opacity: intensite,
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 48% 100% at 50% 100%, ${alpha(c.couleur, 0.5)}, ${alpha(c.halo, 0.18)} 45%, transparent 78%)`,
+          filter: `blur(${Math.max(2, largeur * 0.25)}px)`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: "36%",
+          right: "36%",
+          bottom: 0,
+          height: "80%",
+          borderRadius: "50% 50% 0 0",
+          background: `linear-gradient(to top, ${alpha(c.coeur, 0.75)}, ${alpha(c.couleur, 0.35)} 30%, ${alpha(c.couleur, 0.1)} 65%, transparent)`,
+          filter: `blur(${Math.max(1.5, largeur * 0.12)}px)`,
+        }}
+      />
+    </div>
+  );
+};
+
+/**
+ * Brume : voile de lumière qui monte doucement au-dessus d'une barre lumineuse
+ * (barre rouge « 91% used », barres vertes). Dégradé continu, plus fort du côté brillant,
+ * fondu sur les bords : ça doit ressembler à la lueur d'un néon dans l'air, pas à des traits.
+ */
+export const Brume: React.FC<{
   couleur: Neon;
   largeur: number;
   hauteur?: number;
-  intensite?: number; // 0→1, animable
-  graine?: string;
+  intensite?: number;
+  /** côté le plus lumineux (bout de la barre) */
+  cote?: "gauche" | "droite";
   style?: React.CSSProperties;
-}> = ({ couleur, largeur, hauteur = 110, intensite = 1, graine = "rayons", style }) => {
+}> = ({ couleur, largeur, hauteur = 34, intensite = 1, cote = "droite", style }) => {
   const c = neon[couleur];
-  const n = Math.max(3, Math.round(largeur / 8));
-  const fondu = "linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.35) 65%, transparent 100%)";
+  const fonduH = `linear-gradient(90deg, transparent, #000 ${cote === "droite" ? 35 : 8}%, #000 ${cote === "droite" ? 92 : 65}%, transparent)`;
   return (
     <div
       style={{
         position: "absolute",
         left: 0,
-        bottom: "100%",
+        bottom: "45%",
         width: largeur,
         height: hauteur,
         transformOrigin: "50% 100%",
         transform: "rotateX(-90deg)",
         pointerEvents: "none",
         opacity: intensite,
-        WebkitMaskImage: fondu,
-        maskImage: fondu,
+        WebkitMaskImage: fonduH,
+        maskImage: fonduH,
         ...style,
       }}
     >
-      {largeur > 40 && (
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "70%",
-            background: `linear-gradient(to top, ${alpha(c.couleur, 0.4)}, ${alpha(c.halo, 0.12)} 55%, transparent)`,
-            filter: "blur(5px)",
-          }}
-        />
-      )}
-      {Array.from({ length: n }).map((_, i) => {
-        const x = ((i + 0.5) / n) * largeur + (random(`${graine}-x-${i}`) - 0.5) * 6;
-        const w = 1.5 + random(`${graine}-w-${i}`) * 5;
-        const h = 0.4 + random(`${graine}-h-${i}`) * 0.6;
-        const a = 0.45 + random(`${graine}-a-${i}`) * 0.55;
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: x - w / 2,
-              bottom: 0,
-              width: w,
-              height: `${h * 100}%`,
-              background: `linear-gradient(to top, ${alpha(c.coeur, a)}, ${alpha(c.couleur, a * 0.6)} 35%, ${alpha(c.halo, a * 0.25)} 70%, transparent)`,
-              filter: "blur(1.6px)",
-            }}
-          />
-        );
-      })}
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "100%",
+          background: `linear-gradient(to top, ${alpha(c.couleur, 0.42)}, ${alpha(c.halo, 0.16)} 35%, ${alpha(c.halo, 0.05)} 70%, transparent)`,
+          filter: "blur(5px)",
+        }}
+      />
     </div>
   );
 };
+
+/** Relief : épaisseur des gros chiffres (extrusion vers le bas du plan, comme « 100 000 » en vidéo 4). */
+export const relief = (profondeur = 4, pas = 0.5) =>
+  Array.from({ length: profondeur }, (_, i) => {
+    const v = Math.round(150 - (i / Math.max(1, profondeur - 1)) * 105);
+    return `0 ${((i + 1) * pas).toFixed(2)}px 0 rgb(${v},${v},${v + 4})`;
+  }).join(", ");
+
+/** Hachures du segment « projeté » au bout des barres (vidéo 3). */
+export const hachures = (n: Neon) =>
+  `repeating-linear-gradient(-55deg, ${alpha(neon[n].couleur, 0.55)} 0 1.6px, transparent 1.6px 5px)`;
 
 /**
  * Traînée lumineuse : un trait de lumière flou qui s'étire le long d'un bord

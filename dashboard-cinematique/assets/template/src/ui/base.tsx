@@ -12,7 +12,7 @@ export const Carte: React.FC<{
   h: number;
   children?: React.ReactNode;
   style?: React.CSSProperties;
-  /** Garde la 3D pour les enfants (obligatoire si la carte contient des <Rayons/>). */
+  /** Garde la 3D pour les enfants (obligatoire si la carte contient un <Faisceau/> ou une <Brume/>). */
   relief?: boolean;
 }> = ({ x, y, l, h, children, style, relief }) => (
   <div

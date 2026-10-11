@@ -19,12 +19,15 @@ type Plan = {
 
 /**
  * Trois fins relevées dans les références :
- *  - "recul"  : coupe sur le tableau de bord entier, à plat, puis logo tracé par-dessus (vidéos 2, 3)
- *  - "barre"  : gros plan sur la barre du haut, le logo se trace par-dessus, l'UI s'éteint (vidéos 1, 4)
- *  - "aucune" : pas de logo, la vidéo s'arrête sur le dernier plan (vidéo 5, montage de plans)
+ *  - "recul"  : coupe sur le tableau de bord entier, à plat, qui respire puis s'éteint (vidéos 2, 3)
+ *  - "barre"  : gros plan sur la barre du haut, qui s'éteint (vidéos 1, 4)
+ *  - "aucune" : la vidéo s'arrête sur le dernier plan (vidéo 5, montage de plans)
+ * `logo: true` ajoute le logo tracé (comète bleue) par-dessus la fin, comme dans les références.
  */
 type Fin = {
   type: "recul" | "barre" | "aucune";
+  /** Logo tracé à la fin. Désactivé par défaut (préférence : pas de logo de fin). */
+  logo?: boolean;
   part?: number;
   logoDebut: number;
   logoDuree: number;
@@ -52,7 +55,7 @@ export const DashboardFilm: React.FC<{ avecSon?: boolean }> = ({ avecSon = true 
     ))}
 
     {FIN.type !== "aucune" && (
-      <Sequence from={DEBUT_FIN} durationInFrames={FIN.total} name={`fin (${FIN.type}) + logo`}>
+      <Sequence from={DEBUT_FIN} durationInFrames={FIN.total} name={`fin (${FIN.type})${FIN.logo ? " + logo" : ""}`}>
         <AbsoluteFill style={{ background: "#050506" }}>
           {FIN.type === "recul" ? (
             <Recul monde={MONDE} part={FIN.part} sortie={{ debut: FIN.extinctionDebut, duree: FIN.extinctionDuree }}>
@@ -61,14 +64,16 @@ export const DashboardFilm: React.FC<{ avecSon?: boolean }> = ({ avecSon = true 
           ) : (
             <FinBarre />
           )}
-          <LogoTrace
-            trace={MARQUE_TRACE}
-            vue={MARQUE_VUE}
-            epaisseur={MARQUE_EPAISSEUR}
-            taille={FIN.logoTaille}
-            debut={FIN.logoDebut}
-            duree={FIN.logoDuree}
-          />
+          {FIN.logo && (
+            <LogoTrace
+              trace={MARQUE_TRACE}
+              vue={MARQUE_VUE}
+              epaisseur={MARQUE_EPAISSEUR}
+              taille={FIN.logoTaille}
+              debut={FIN.logoDebut}
+              duree={FIN.logoDuree}
+            />
+          )}
         </AbsoluteFill>
       </Sequence>
     )}

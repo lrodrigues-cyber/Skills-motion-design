@@ -1,7 +1,7 @@
 import React from "react";
 import { apparition, compter, ease, mix, prog } from "../lib/anim";
 import { couleurs, neon, type Neon } from "../style/tokens";
-import { couleurAlpha, halo, haloTexte, Rayons, remplissageNeon, Trainee } from "../cinema/Lumiere";
+import { Brume, couleurAlpha, Faisceau, hachures, halo, haloTexte, relief, remplissageNeon, Trainee } from "../cinema/Lumiere";
 import { Carte, Icone, Pastille, Texte, type NomIcone } from "./base";
 import { FINI } from "./structure";
 
@@ -41,7 +41,7 @@ export const CarteKpi: React.FC<
     <Carte x={x} y={y} l={l} h={h}>
       <EnTeteCarte icone={icone} titre={libelle} f={f} />
       <div style={{ position: "absolute", left: 22, top: 52, display: "flex", alignItems: "baseline", gap: 10 }}>
-        <Texte taille={30} graisse={600} style={apparition(f, 6)}>
+        <Texte taille={30} graisse={600} style={{ textShadow: relief(3), ...apparition(f, 6) }}>
           {prefixe}
           {fmt(compter(f, 6, 30, valeur * 0.6, valeur), decimales)}
           {suffixe}
@@ -105,7 +105,7 @@ export const CarteCourbe: React.FC<Boite & { accent?: Neon }> = ({ x, y, l, h, f
         }
       />
       <div style={{ position: "absolute", left: 22, top: 48, display: "flex", alignItems: "baseline", gap: 10, ...apparition(f, 4) }}>
-        <Texte taille={28} graisse={600}>
+        <Texte taille={28} graisse={600} style={{ textShadow: relief(3) }}>
           ${fmt(compter(f, 8, 30, 98, 128.42) * 1000)}
         </Texte>
         <Pastille accent="vert">+12.5%</Pastille>
@@ -170,17 +170,17 @@ export const CarteUsage: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
       <div style={{ position: "absolute", left: 24, top: 62, display: "flex", alignItems: "center", gap: 8, transformStyle: "preserve-3d", ...apparition(f, 4) }}>
         <div style={{ position: "relative", transformStyle: "preserve-3d" }}>
           <Icone nom="alerte" taille={18} couleur={neon.rouge.coeur} epaisseur={2.2} style={{ filter: `drop-shadow(0 0 4px ${neon.rouge.couleur}) drop-shadow(0 0 10px ${neon.rouge.halo})` }} />
-          <Rayons couleur="rouge" largeur={10} hauteur={70} intensite={lum * 0.9} graine="usage-icone" style={{ left: 4 }} />
+          <Faisceau couleur="rouge" largeur={18} hauteur={64} intensite={lum} />
         </div>
         <Texte graisse={600} couleur={neon.rouge.coeur} style={{ textShadow: haloTexte("rouge", 0.6) }}>
           Action required
         </Texte>
       </div>
       <div style={{ position: "absolute", left: 24, top: 104, display: "flex", alignItems: "baseline", gap: 8 }}>
-        <Texte taille={46} graisse={600} style={apparition(f, 8)}>
+        <Texte taille={46} graisse={600} style={{ textShadow: relief(5), ...apparition(f, 8) }}>
           {fmt(Math.round(compter(f, 10, 38, 12000, 91000) / 10) * 10).replace(/,/g, " ")}
         </Texte>
-        <Texte taille={30} graisse={500} couleur={couleurs.texteFaible} style={apparition(f, 12)}>
+        <Texte taille={30} graisse={500} couleur={couleurs.texteFaible} style={{ textShadow: relief(3, 0.45), ...apparition(f, 12) }}>
           / 100 000
         </Texte>
       </div>
@@ -198,7 +198,7 @@ export const CarteUsage: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
             transformStyle: "preserve-3d",
           }}
         >
-          <Rayons couleur="rouge" largeur={largeurPiste * 0.91 * remplissage} hauteur={120} intensite={lum} graine="usage-barre" />
+          <Brume couleur="rouge" largeur={largeurPiste * 0.91 * remplissage} hauteur={44} intensite={lum * 0.9} />
         </div>
       </div>
       <Texte
@@ -242,7 +242,7 @@ export const CarteHistogramme: React.FC<Boite & { accent?: Neon; ligne?: Neon }>
   return (
     <Carte x={x} y={y} l={l} h={h}>
       <EnTeteCarte icone="graphique" titre="Weekly signups" f={f} droite={<Pastille accent={accent}>+18%</Pastille>} />
-      <Texte taille={28} graisse={600} style={{ position: "absolute", left: 22, top: 48, ...apparition(f, 4) }}>
+      <Texte taille={28} graisse={600} style={{ position: "absolute", left: 22, top: 48, textShadow: relief(3), ...apparition(f, 4) }}>
         {fmt(compter(f, 6, 40, 900, 2481))}
       </Texte>
       {INSCRIPTIONS.map((v, i) => {
@@ -308,7 +308,7 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
   return (
     <Carte x={x} y={y} l={l} h={h} relief>
       <EnTeteCarte icone="dollar" titre="Net MRR movement" f={f} droite={<Pastille accent="menthe">+$8,050</Pastille>} />
-      <Texte taille={28} graisse={600} style={{ position: "absolute", left: 22, top: 48, ...apparition(f, 4) }}>
+      <Texte taille={28} graisse={600} style={{ position: "absolute", left: 22, top: 48, textShadow: relief(3), ...apparition(f, 4) }}>
         +${fmt(compter(f, 6, 36, 2000, 8050))}
       </Texte>
       <div style={{ position: "absolute", left: axe, top: top0 - 14, width: 1, height: pasL * 4 + 8, background: couleurs.bordFort }} />
@@ -327,6 +327,21 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
             <div
               style={{
                 position: "absolute",
+                left: positif ? axe + w - 14 : axe - w - demi * 0.16 * p + 14,
+                top: ty + 1,
+                width: demi * 0.16 * p,
+                height: 26,
+                borderRadius: positif ? "0 13px 13px 0" : "13px 0 0 13px",
+                border: `1px solid ${couleurAlpha(neon[accent].couleur, 0.6)}`,
+                borderLeftWidth: positif ? 0 : 1,
+                borderRightWidth: positif ? 1 : 0,
+                background: hachures(accent),
+                opacity: prog(f, 20 + i * 5, 14),
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
                 left: positif ? axe : axe - w,
                 top: ty,
                 width: w,
@@ -339,7 +354,7 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
                 transformStyle: "preserve-3d",
               }}
             >
-              {i === 0 && <Rayons couleur="menthe" largeur={w} hauteur={90} intensite={p * 0.85} graine="div-0" />}
+              {i === 0 && <Brume couleur="menthe" largeur={w} hauteur={36} intensite={p * 0.7} cote={positif ? "droite" : "gauche"} />}
             </div>
             <Texte
               taille={12}

@@ -28,6 +28,12 @@ export type PlateauProps = {
   entree?: number;
   /** Durée du plan en images (la dérive caméra s'étale sur toute cette durée). */
   duree?: number;
+  /**
+   * Sur-échantillonnage : le monde est DESSINÉ `surEchantillonnage` fois plus grand (CSS zoom)
+   * puis réduit d'autant par la caméra. Sans ça, Chrome rastérise le plan 3D à taille réelle
+   * puis l'agrandit (×3 à ×5) : texte pixelisé. Par défaut = zoom caméra max (arrondi au-dessus).
+   */
+  surEchantillonnage?: number;
   /** Rendu du monde ; appelé deux fois (copie floue + copie nette). */
   children: React.ReactNode;
 };
@@ -42,6 +48,7 @@ export const Plateau: React.FC<PlateauProps> = ({
   nettete = {},
   entree = 15,
   duree = PLAN,
+  surEchantillonnage,
   children,
 }) => {
   const frame = useCurrentFrame();
@@ -53,6 +60,7 @@ export const Plateau: React.FC<PlateauProps> = ({
   const z = mix(zoom.de, zoom.a, t);
   const rx = mix(inclinaison.de, inclinaison.a, t);
   const rz = mix(rotation.de, rotation.a, t);
+  const Z = surEchantillonnage ?? Math.min(6, Math.max(1, Math.ceil(Math.max(zoom.de, zoom.a))));
 
   const { centre = 50, demiLargeur = 7, fondu = 20, flou = 12, angle = 180 } = nettete;
 
@@ -66,16 +74,18 @@ export const Plateau: React.FC<PlateauProps> = ({
       <div
         style={{
           position: "absolute",
-          left: width / 2 - cx,
-          top: height / 2 - cy,
-          width: monde.largeur,
-          height: monde.hauteur,
-          transformOrigin: `${cx}px ${cy}px`,
-          transform: `rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z})`,
+          left: width / 2 - cx * Z,
+          top: height / 2 - cy * Z,
+          width: monde.largeur * Z,
+          height: monde.hauteur * Z,
+          transformOrigin: `${cx * Z}px ${cy * Z}px`,
+          transform: `rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z / Z})`,
           transformStyle: "preserve-3d",
         }}
       >
-        {children}
+        <div style={{ position: "relative", zoom: Z, width: monde.largeur, height: monde.hauteur, transformStyle: "preserve-3d" }}>
+          {children}
+        </div>
       </div>
     </AbsoluteFill>
   );

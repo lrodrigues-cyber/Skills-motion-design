@@ -123,12 +123,13 @@ Méthode : planches-contacts à 1, 4 et 15 i/s, détection des coupes (`ffmpeg s
 
 ## 3. Son : ce qui est commun
 
-Chaque vidéo a **sa propre musique**, mais toutes suivent la même grammaire :
+Chaque vidéo a **sa propre musique**, mais toutes suivent la même grammaire. Les mesures détaillées (spectre, stéréo, accords seconde par seconde, attaques aux coupes) sont dans `recette-son.md`.
 
-- **Nappe électronique sombre** en mode mineur (V1 fa mineur, V2 ut mineur, V3 la♭ majeur / fa mineur, V4 mi), tempo ressenti 82–100 BPM.
+- **Un seul accord tenu** du début à la fin (bourdon) : V1 fa mineur, V2 do mineur, V3 ré♭ / fa mineur, V4 la, V5 fa / ré mineur. Tempo ressenti 82–100 BPM.
 - Couches : **sub-basse tenue** (45–90 Hz, très présente), **accords de pad** (100 Hz–1 kHz), **pulsation rythmique** : doubles-croches « pluck » (V4, une attaque toutes les 0,16 s = 94 BPM) ou trémolo/pompe sur les nappes (V2, V3), parfois des grosses caisses douces à hauteur descendante (V5, ~96 BPM).
 - **Le son s'éclaircit pendant toute la vidéo** (filtre qui s'ouvre) : centroïde spectral V1 600 → 1 700 Hz, coupure à 95 % 2,7 → 5,9 kHz ; V4 et V3 idem, jusqu'à la révélation.
-- **Pas de clics d'interface** : le design sonore est musical et rare, calé sur 3–4 moments.
+- **Pas de clics d'interface ni de bruit aux coupes** (vérifié : aucune attaque ni saut de niveau systématique aux coupes). Le design sonore est musical et rare, calé sur 3–4 moments.
+- **Sombre et profond** : énergie forte à 30–60 Hz, rien de brillant au-dessus de 8 kHz ; stéréo large (corrélation G/D ~0,75).
 - Niveau : RMS -15 à -22 dBFS, crêtes -6 à -9 dBFS. Le son démarre dès la 1re image et finit en silence.
 
 ### Effets calés sur l'image
