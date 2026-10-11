@@ -4,7 +4,7 @@ import { ease, mix, prog } from "../lib/anim";
 
 /**
  * Le recul final (vidéos 2 et 3) : coupe franche sur le tableau de bord ENTIER, à plat,
- * de face, petit (≈ 42–46 % de la largeur de l'image), centré sur fond noir.
+ * de face, centré sur fond noir, sur ≈ 50–64 % de la largeur de l’image.
  * Il apparaît en fondu depuis le noir, grossit à peine (respiration), puis s'éteint
  * pendant que le logo se trace par-dessus.
  */
@@ -13,7 +13,7 @@ export const Recul: React.FC<{
   part?: number; // largeur à l'écran / largeur de l'image
   sortie: { debut: number; duree: number };
   children: React.ReactNode;
-}> = ({ monde, part = 0.44, sortie, children }) => {
+}> = ({ monde, part = 0.56, sortie, children }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const echelle = (width * part) / monde.largeur;

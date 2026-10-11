@@ -56,7 +56,7 @@ Méthode : planches-contacts à 1, 4 et 15 i/s, détection des coupes (`ffmpeg s
 - Barres qui poussent une par une (décalage ~0,12–0,15 s), courbes qui se tracent point par point, compteurs qui montent, barres de progression qui se remplissent, lignes de liste qui apparaissent en cascade (fondu + flou + léger glissement), icônes qui tombent en place.
 
 ### Fin
-- **Recul** (V2, V3) : coupe franche sur le tableau de bord **entier, à plat, de face**, petit (≈ 42–46 % de la largeur), centré sur noir. Il « respire » (grossit à peine). ~1,5–2 s plus tard, le **logo se trace** au centre par-dessus (≈ 0,6–0,75 s), puis l'UI s'éteint (~1 s) et le logo reste seul ~2–3 s.
+- **Recul** (V2, V3) : coupe franche sur le tableau de bord **entier, à plat, de face**, sur ≈ 50–64 % de la largeur (mesuré : V3 50 %, V2 64 %), centré sur noir. Il « respire » (grossit à peine). ~1,5–2 s plus tard, le **logo se trace** au centre par-dessus (≈ 0,6–0,75 s), puis l'UI s'éteint (~1 s) et le logo reste seul ~2–3 s.
 - **Barre du haut** (V1, V4) : gros plan sur ⌘K / cloche / avatar / bouton ; les éléments apparaissent un par un ; le logo se trace par-dessus ; l'UI s'éteint ; logo seul ~3 s.
 - **Logo** : un seul trait épais, blanc, avec une **tête de comète bleue** lumineuse au bout ; la lueur s'éteint ~0,3 s après la fin du tracé. Le logo est à l'écran (pas sur le plan incliné), au centre exact.
 

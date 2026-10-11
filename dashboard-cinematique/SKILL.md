@@ -27,7 +27,7 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **UI** | Vraie interface à **taille réelle** (texte 11–15 px, chiffres 28–46 px), contenu réaliste. C'est la caméra qui grossit | Les tailles d'app réelle donnent l'authenticité |
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
 | **Rythme interne** | 0–15 mise au point · 8–12 1er élément · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Relevé sur les 5 vidéos |
-| **Fin** | `recul` (UI entière à plat, ~44 % de la largeur) **ou** `barre` (gros plan ⌘K/cloche/bouton) ; puis le **logo se trace** en blanc avec une comète bleue (22 images) ; l'UI s'éteint ; logo seul ~2 s sur noir | V2, V3 = recul ; V1, V4 = barre |
+| **Fin** | `recul` (UI entière à plat, 50–64 % de la largeur) **ou** `barre` (gros plan ⌘K/cloche/bouton) ; puis le **logo se trace** en blanc avec une comète bleue (22 images) ; l'UI s'éteint ; logo seul ~2 s sur noir | V2, V3 = recul ; V1, V4 = barre |
 | **Son** | Nappe électronique sombre originale (mineur, ~94 BPM, sub + pad + arpège en doubles-croches qui pompe), **filtre qui s'ouvre** jusqu'à la révélation, 2–4 effets calés à l'image, la musique **s'arrête** à la révélation, impact, scintillement du logo, écho, silence final | Voir `references/recette-son.md` |
 
 ## Workflow
@@ -111,7 +111,7 @@ Cadrages qui fonctionnent (testés) :
 
 Ordre conseillé des 5 plans : une ouverture calme (en-tête, KPI, traînée lumineuse), un graphique qui pousse, un chiffre d'alerte rouge avec ses rayons, un deuxième graphique (couleurs opposées), puis la barre du haut avec le bouton. Alterne les couleurs d'accent d'un plan à l'autre (cyan → bleu → rouge → menthe/rouge → magenta).
 
-Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera`) ou `aucune`. Valeurs par défaut testées : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150. Remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
+Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera`) ou `aucune`. Valeurs par défaut testées : `part` 0,56 (recul), `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150. Remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
 
 ### 5. Le son
 
@@ -144,7 +144,7 @@ Pour une image précise : `npx remotion still DashboardFilm out/img.png --frame=
 ```bash
 npx remotion render DashboardFilm out/film.mp4     # 1920×1080, H.264 CRF 16, BT.709 (remotion.config.ts)
 ```
-Compte ~10–15 min sur 4 cœurs (les flous coûtent cher). Livre :
+Compte ~20–25 min sur 4 cœurs pour 20 s (les flous coûtent cher ; le brouillon à `--scale=0.5` prend ~4 min). Livre :
 - le fichier ;
 - la liste des plans avec leurs temps ;
 - ce qui est fictif (marque, données) ;
