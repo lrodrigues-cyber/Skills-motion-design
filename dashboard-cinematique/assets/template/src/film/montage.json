@@ -1,0 +1,71 @@
+{
+  "fps": 30,
+  "largeur": 1920,
+  "hauteur": 1080,
+  "marque": "Nova",
+  "plans": [
+    {
+      "id": "ouverture-kpi",
+      "duree": 90,
+      "horloges": {"entete": 0, "kpi1": 0, "laterale": 0},
+      "camera": {
+        "cible": {"de": {"x": 340, "y": 222}, "a": {"x": 430, "y": 200}},
+        "zoom": {"de": 3.9, "a": 4.15},
+        "inclinaison": {"de": 54, "a": 52},
+        "rotation": {"de": -27, "a": -25}
+      },
+      "son": []
+    },
+    {
+      "id": "courbe-revenus",
+      "duree": 90,
+      "horloges": {"courbe": 0},
+      "camera": {
+        "cible": {"de": {"x": 600, "y": 478}, "a": {"x": 720, "y": 452}},
+        "zoom": {"de": 4.2, "a": 4.45},
+        "inclinaison": {"de": 48, "a": 48},
+        "rotation": {"de": -19, "a": -21}
+      },
+      "son": [{"type": "montee", "a": 8, "duree": 40}]
+    },
+    {
+      "id": "usage-rouge",
+      "duree": 90,
+      "horloges": {"usage": 0},
+      "camera": {
+        "cible": {"de": {"x": 1210, "y": 468}, "a": {"x": 1290, "y": 452}},
+        "zoom": {"de": 3.2, "a": 3.4},
+        "inclinaison": {"de": 56, "a": 55},
+        "rotation": {"de": -33, "a": -31}
+      },
+      "son": []
+    },
+    {
+      "id": "barres-divergentes",
+      "duree": 90,
+      "horloges": {"divergent": 0},
+      "camera": {
+        "cible": {"de": {"x": 905, "y": 812}, "a": {"x": 965, "y": 800}},
+        "zoom": {"de": 3.7, "a": 3.9},
+        "inclinaison": {"de": 47, "a": 46},
+        "rotation": {"de": -17, "a": -19},
+        "nettete": {"demiLargeur": 15, "fondu": 24}
+      },
+      "son": [{"type": "montee", "a": 8, "duree": 36}]
+    },
+    {
+      "id": "barre-haute-bouton",
+      "duree": 90,
+      "horloges": {"haute": 0},
+      "camera": {
+        "cible": {"de": {"x": 1390, "y": 40}, "a": {"x": 1470, "y": 32}},
+        "zoom": {"de": 4.8, "a": 5.1},
+        "inclinaison": {"de": 46, "a": 45},
+        "rotation": {"de": -17, "a": -19}
+      },
+      "son": [{"type": "souffle", "a": -24, "duree": 24}]
+    }
+  ],
+  "fin": {"type": "recul", "part": 0.44, "logoDebut": 48, "logoDuree": 22, "extinctionDebut": 72, "extinctionDuree": 30, "total": 150, "logoTaille": 150},
+  "musique": {"bpm": 94, "tonique": "E", "mode": "mineur", "revelation": "arret", "volume": 1.0}
+}

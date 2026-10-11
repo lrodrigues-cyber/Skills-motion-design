@@ -1,0 +1,41 @@
+import React from "react";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { ease, mix, prog } from "../lib/anim";
+
+/**
+ * Le recul final (vidéos 2 et 3) : coupe franche sur le tableau de bord ENTIER, à plat,
+ * de face, petit (≈ 42–46 % de la largeur de l'image), centré sur fond noir.
+ * Il apparaît en fondu depuis le noir, grossit à peine (respiration), puis s'éteint
+ * pendant que le logo se trace par-dessus.
+ */
+export const Recul: React.FC<{
+  monde: { largeur: number; hauteur: number };
+  part?: number; // largeur à l'écran / largeur de l'image
+  sortie: { debut: number; duree: number };
+  children: React.ReactNode;
+}> = ({ monde, part = 0.44, sortie, children }) => {
+  const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
+  const echelle = (width * part) / monde.largeur;
+  const entree = prog(frame, 0, 10, ease.sortie);
+  const respiration = mix(0.985, 1.03, prog(frame, 0, sortie.debut + sortie.duree, ease.derive));
+  const extinction = 1 - prog(frame, sortie.debut, sortie.duree, ease.doux);
+  return (
+    <AbsoluteFill style={{ opacity: entree * extinction }}>
+      <div
+        style={{
+          position: "absolute",
+          left: width / 2 - monde.largeur / 2,
+          top: height / 2 - monde.hauteur / 2,
+          width: monde.largeur,
+          height: monde.hauteur,
+          transform: `scale(${echelle * respiration})`,
+          transformOrigin: "50% 50%",
+          filter: `brightness(${mix(0.55, 1, entree)})`,
+        }}
+      >
+        {children}
+      </div>
+    </AbsoluteFill>
+  );
+};
