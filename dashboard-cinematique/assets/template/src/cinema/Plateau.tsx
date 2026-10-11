@@ -62,7 +62,7 @@ export const Plateau: React.FC<PlateauProps> = ({
   const rz = mix(rotation.de, rotation.a, t);
   const Z = surEchantillonnage ?? Math.min(6, Math.max(1, Math.ceil(Math.max(zoom.de, zoom.a))));
 
-  const { centre = 50, demiLargeur = 7, fondu = 20, flou = 12, angle = 180 } = nettete;
+  const { centre = 50, demiLargeur = 8, fondu = 22, flou = 11, angle = 180 } = nettete;
 
   // Mise au point d'ouverture : chaque plan commence flou et sombre puis se révèle.
   const pEntree = prog(frame, 0, entree, ease.sortie);
@@ -90,22 +90,28 @@ export const Plateau: React.FC<PlateauProps> = ({
     </AbsoluteFill>
   );
 
-  const masque = `linear-gradient(${angle}deg, transparent ${centre - demiLargeur - fondu}%, #000 ${centre - demiLargeur}%, #000 ${centre + demiLargeur}%, transparent ${centre + demiLargeur + fondu}%)`;
+  // Profondeur de champ PROGRESSIVE (3 niveaux, comme un vrai objectif) : la netteté décroît
+  // doucement avec la distance au plan de mise au point. Deux niveaux seulement donnent un
+  // « double » visible (net + flou superposés) : c'est ce qui faisait les flous artificiels.
+  const bande = (demi: number, f: number) =>
+    `linear-gradient(${angle}deg, transparent ${centre - demi - f}%, #000 ${centre - demi}%, #000 ${centre + demi}%, transparent ${centre + demi + f}%)`;
+  const masqueNet = bande(demiLargeur, fondu * 0.55);
+  const masqueMoyen = bande(demiLargeur + fondu * 0.45, fondu * 0.9);
+  // Le lointain (haut) et le premier plan (bas) tombent dans l'ombre : la lumière est posée sur
+  // la zone nette, le flou ne doit jamais être plus visible que le sujet.
+  const ombre = `linear-gradient(${angle}deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) ${Math.max(0, centre - demiLargeur - fondu)}%, rgba(0,0,0,0) ${centre - demiLargeur}%, rgba(0,0,0,0) ${centre + demiLargeur}%, rgba(0,0,0,0.3) ${Math.min(100, centre + demiLargeur + fondu)}%, rgba(0,0,0,0.6) 100%)`;
 
   return (
     <AbsoluteFill style={{ filter: `brightness(${lumiere})` }}>
-      {/* copie floue : tout ce qui est hors de la bande de netteté */}
+      {/* très flou : tout ce qui est loin du plan de mise au point */}
       <AbsoluteFill style={{ filter: `blur(${flou + flouEntree * 0.5}px)` }}>{monde3D}</AbsoluteFill>
-      {/* copie nette, masquée sur la bande de netteté */}
-      <AbsoluteFill
-        style={{
-          WebkitMaskImage: masque,
-          maskImage: masque,
-          filter: flouEntree > 0.05 ? `blur(${flouEntree}px)` : undefined,
-        }}
-      >
+      {/* légèrement flou : la transition */}
+      <AbsoluteFill style={{ WebkitMaskImage: masqueMoyen, maskImage: masqueMoyen, filter: `blur(${flou * 0.35 + flouEntree * 0.6}px)` }}>{monde3D}</AbsoluteFill>
+      {/* net : la bande de mise au point */}
+      <AbsoluteFill style={{ WebkitMaskImage: masqueNet, maskImage: masqueNet, filter: flouEntree > 0.05 ? `blur(${flouEntree}px)` : undefined }}>
         {monde3D}
       </AbsoluteFill>
+      <AbsoluteFill style={{ background: ombre, pointerEvents: "none" }} />
     </AbsoluteFill>
   );
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { apparition, compter, ease, mix, prog } from "../lib/anim";
 import { couleurs, neon, type Neon } from "../style/tokens";
-import { Brume, couleurAlpha, Faisceau, hachures, halo, haloTexte, relief, remplissageNeon, Trainee } from "../cinema/Lumiere";
+import { couleurAlpha, hachures, halo, haloTexte, relief, remplissageNeon, Trainee } from "../cinema/Lumiere";
 import { Carte, Icone, Pastille, Texte, type NomIcone } from "./base";
 import { FINI } from "./structure";
 
@@ -38,6 +38,7 @@ export const CarteKpi: React.FC<
   }
 > = ({ x, y, l, h, f = FINI, icone, libelle, valeur, prefixe = "", suffixe = "", decimales = 0, delta, accent, trainee }) => (
   <>
+    {trainee && <Trainee couleur={trainee} progression={prog(f, 14, 34)} x={x} y={y + h} largeur={l} />}
     <Carte x={x} y={y} l={l} h={h}>
       <EnTeteCarte icone={icone} titre={libelle} f={f} />
       <div style={{ position: "absolute", left: 22, top: 52, display: "flex", alignItems: "baseline", gap: 10 }}>
@@ -56,7 +57,6 @@ export const CarteKpi: React.FC<
         vs last month
       </Texte>
     </Carte>
-    {trainee && <Trainee couleur={trainee} progression={prog(f, 14, 34)} largeur={l + 90} epaisseur={13} style={{ left: x - 10, top: y + h - 46 }} />}
   </>
 );
 
@@ -165,13 +165,10 @@ export const CarteUsage: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
   const largeurPiste = l - 48;
   const lum = prog(f, 14, 30);
   return (
-    <Carte x={x} y={y} l={l} h={h} relief>
+    <Carte x={x} y={y} l={l} h={h}>
       <EnTeteCarte icone="calques" titre="Usage limits" f={f} droite={<Pastille accent="bleu" force={0.6}>API</Pastille>} />
-      <div style={{ position: "absolute", left: 24, top: 62, display: "flex", alignItems: "center", gap: 8, transformStyle: "preserve-3d", ...apparition(f, 4) }}>
-        <div style={{ position: "relative", transformStyle: "preserve-3d" }}>
-          <Icone nom="alerte" taille={18} couleur={neon.rouge.coeur} epaisseur={2.2} style={{ filter: `drop-shadow(0 0 4px ${neon.rouge.couleur}) drop-shadow(0 0 10px ${neon.rouge.halo})` }} />
-          <Faisceau couleur="rouge" largeur={18} hauteur={64} intensite={lum} />
-        </div>
+      <div style={{ position: "absolute", left: 24, top: 62, display: "flex", alignItems: "center", gap: 8, ...apparition(f, 4) }}>
+        <Icone nom="alerte" taille={18} couleur={neon.rouge.coeur} epaisseur={2.2} style={{ filter: `drop-shadow(0 0 2px ${neon.rouge.couleur}) drop-shadow(0 0 5px ${neon.rouge.halo})` }} />
         <Texte graisse={600} couleur={neon.rouge.coeur} style={{ textShadow: haloTexte("rouge", 0.6) }}>
           Action required
         </Texte>
@@ -184,7 +181,7 @@ export const CarteUsage: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
           / 100 000
         </Texte>
       </div>
-      <div style={{ position: "absolute", left: 24, top: 186, width: largeurPiste, height: 12, borderRadius: 12, background: "#1b1b20", transformStyle: "preserve-3d" }}>
+      <div style={{ position: "absolute", left: 24, top: 186, width: largeurPiste, height: 12, borderRadius: 12, background: "#1b1b20" }}>
         <div
           style={{
             position: "absolute",
@@ -194,17 +191,14 @@ export const CarteUsage: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
             width: largeurPiste * 0.91 * remplissage,
             borderRadius: 12,
             background: `linear-gradient(90deg, ${neon.rouge.halo}, ${neon.rouge.couleur} 70%, ${neon.rouge.coeur})`,
-            boxShadow: halo("rouge", 1.1 * lum),
-            transformStyle: "preserve-3d",
+            boxShadow: halo("rouge", lum),
           }}
-        >
-          <Brume couleur="rouge" largeur={largeurPiste * 0.91 * remplissage} hauteur={44} intensite={lum * 0.9} />
-        </div>
+        />
       </div>
       <Texte
         graisse={600}
         couleur={neon.rouge.coeur}
-        style={{ position: "absolute", right: 24, top: 160, textShadow: haloTexte("rouge", 0.8), ...apparition(f, 30) }}
+        style={{ position: "absolute", right: 24, top: 160, textShadow: haloTexte("rouge", 0.6), ...apparition(f, 30) }}
       >
         {Math.round(91 * remplissage)}% used
       </Texte>
@@ -306,7 +300,7 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
     top0 = 124,
     pasL = 56;
   return (
-    <Carte x={x} y={y} l={l} h={h} relief>
+    <Carte x={x} y={y} l={l} h={h}>
       <EnTeteCarte icone="dollar" titre="Net MRR movement" f={f} droite={<Pastille accent="menthe">+$8,050</Pastille>} />
       <Texte taille={28} graisse={600} style={{ position: "absolute", left: 22, top: 48, textShadow: relief(3), ...apparition(f, 4) }}>
         +${fmt(compter(f, 6, 36, 2000, 8050))}
@@ -317,6 +311,7 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
         const positif = m.v > 0;
         const accent: Neon = positif ? "menthe" : "rouge";
         const w = Math.abs(m.v) * demi * p;
+        const hw = demi * 0.14 * prog(f, 22 + i * 5, 16); // bout hachuré « projeté »
         const ty = top0 + i * pasL;
         return (
           <React.Fragment key={m.nom}>
@@ -327,34 +322,30 @@ export const CarteDivergente: React.FC<Boite> = ({ x, y, l, h, f = FINI }) => {
             <div
               style={{
                 position: "absolute",
-                left: positif ? axe + w - 14 : axe - w - demi * 0.16 * p + 14,
-                top: ty + 1,
-                width: demi * 0.16 * p,
-                height: 26,
-                borderRadius: positif ? "0 13px 13px 0" : "13px 0 0 13px",
-                border: `1px solid ${couleurAlpha(neon[accent].couleur, 0.6)}`,
-                borderLeftWidth: positif ? 0 : 1,
-                borderRightWidth: positif ? 1 : 0,
-                background: hachures(accent),
-                opacity: prog(f, 20 + i * 5, 14),
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                left: positif ? axe : axe - w,
+                left: positif ? axe : axe - (w + hw),
                 top: ty,
-                width: w,
+                width: w + hw,
                 height: 28,
                 borderRadius: 14,
-                background: positif
-                  ? `linear-gradient(90deg, ${couleurAlpha(neon[accent].halo, 0.8)}, ${neon[accent].couleur} 55%, ${neon[accent].coeur})`
-                  : `linear-gradient(270deg, ${couleurAlpha(neon[accent].halo, 0.8)}, ${neon[accent].couleur} 55%, ${neon[accent].coeur})`,
-                boxShadow: halo(accent, 1 * Math.min(1, p * 1.5)),
-                transformStyle: "preserve-3d",
+                overflow: "hidden",
+                boxSizing: "border-box",
+                border: hw > 0.5 ? `1px solid ${couleurAlpha(neon[accent].couleur, 0.4)}` : "none",
+                boxShadow: halo(accent, 0.9 * Math.min(1, p * 1.5)),
+                opacity: p > 0 ? 1 : 0,
               }}
             >
-              {i === 0 && <Brume couleur="menthe" largeur={w} hauteur={36} intensite={p * 0.7} cote={positif ? "droite" : "gauche"} />}
+              {/* bout hachuré « projeté » : seulement au-delà de la partie pleine */}
+              <div style={{ position: "absolute", top: 0, bottom: 0, [positif ? "left" : "right"]: w, width: hw + 2, background: hachures(accent) }} />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  [positif ? "left" : "right"]: 0,
+                  width: w,
+                  background: `linear-gradient(${positif ? 90 : 270}deg, ${neon[accent].halo}, ${neon[accent].couleur} 55%, ${neon[accent].coeur})`,
+                }}
+              />
             </div>
             <Texte
               taille={12}

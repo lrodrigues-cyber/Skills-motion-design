@@ -12,9 +12,7 @@ export const Carte: React.FC<{
   h: number;
   children?: React.ReactNode;
   style?: React.CSSProperties;
-  /** Garde la 3D pour les enfants (obligatoire si la carte contient un <Faisceau/> ou une <Brume/>). */
-  relief?: boolean;
-}> = ({ x, y, l, h, children, style, relief }) => (
+}> = ({ x, y, l, h, children, style }) => (
   <div
     style={{
       position: "absolute",
@@ -26,8 +24,7 @@ export const Carte: React.FC<{
       background: `linear-gradient(180deg, ${couleurs.fondCarteHaut}, ${couleurs.fondCarte})`,
       border: `1px solid ${couleurs.bord}`,
       boxShadow: "0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 40px rgba(0,0,0,0.35)",
-      transformStyle: relief ? "preserve-3d" : undefined,
-      overflow: relief ? "visible" : "hidden",
+      overflow: "hidden",
       ...style,
     }}
   >
@@ -79,12 +76,12 @@ export const Pastille: React.FC<{
         borderRadius: rayon.pilule,
         background: couleurAlpha(c.couleur, 0.14),
         border: `1px solid ${couleurAlpha(c.couleur, 0.45 * force)}`,
-        boxShadow: `0 0 ${10 * force}px ${couleurAlpha(c.halo, 0.45 * force)}, inset 0 0 6px ${couleurAlpha(c.couleur, 0.2 * force)}`,
+        boxShadow: `0 0 ${4 * force}px ${couleurAlpha(c.halo, 0.35 * force)}, inset 0 0 4px ${couleurAlpha(c.couleur, 0.15 * force)}`,
         fontFamily: police.famille,
         fontSize: taille,
         fontWeight: 600,
         color: c.coeur,
-        textShadow: haloTexte(accent, 0.5 * force),
+        textShadow: haloTexte(accent, 0.35 * force),
         whiteSpace: "nowrap",
         fontVariantNumeric: "tabular-nums",
         ...style,

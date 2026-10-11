@@ -1,6 +1,6 @@
 ---
 name: dashboard-cinematique
-description: Crée des vidéos de motion design « dashboard cinématique » (MP4, Remotion). Une interface SaaS sombre est filmée en très gros plan sur un plan 3D incliné, avec une profondeur de champ très courte, des accents néon qui brillent (halos, lueurs douces, traînées), des chiffres en relief, un texte net en haute définition, des plans de 3 s en coupe franche et un recul final sur l'UI entière (sans logo par défaut). La musique électronique sombre est originale (bourdon sur un seul accord, arrangement qui monte plan après plan) et le design sonore est calé à l'image (montée tonale, arpège, souffle inversé, arrêt de bande, impact). Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre.
+description: Crée des vidéos de motion design « dashboard cinématique » (MP4, Remotion). Une interface SaaS sombre est filmée en très gros plan sur un plan 3D incliné, avec une profondeur de champ très courte, des accents néon qui brillent (halos sobres, liseré lumineux), des chiffres en relief, un texte net en haute définition, des plans de 3 s en coupe franche et un recul final sur l'UI entière (sans logo par défaut). La musique électronique sombre est originale (bourdon sur un seul accord, arrangement qui monte plan après plan) et le design sonore est calé à l'image (montée tonale, arpège, souffle inversé, arrêt de bande, impact). Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre.
 ---
 
 # Dashboard cinématique
@@ -21,9 +21,10 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **Caméra** | UI posée en 3D : inclinaison 45–56°, rotation -17 à -33°, zoom 3,2–5. **Dérive lente continue** (la cible glisse de 70–140 px du monde, zoom +5 %) | L'interface devient un objet. Le mouvement ne s'arrête jamais |
 | **Angle** | Change à chaque plan (inclinaison/rotation différentes) | Évite la monotonie sans transition |
 | **Mise au point** | Chaque plan s'ouvre **flou et sombre** et devient net en ~15 images | C'est la seule « transition » du style |
-| **Profondeur de champ** | Bande nette horizontale au centre ; haut et bas très flous (12 px en 1080p) | Signature macro / objectif ouvert |
-| **Lumière** | Accents néon avec halo ; **lueur douce** qui monte du plan sur l'élément clé (cône `Faisceau` sur une icône, voile `Brume` au-dessus d'une barre — jamais de rayures) ; **traînée** lumineuse ; texte émissif ; bordure lumineuse ; bouton à teinte tournante | C'est la seule source de couleur. La lumière doit paraître naturelle |
-| **Matière** | Gros chiffres en **relief** (légère épaisseur), segment **hachuré** au bout des barres (projection), texte toujours net | Vu en gros plan dans les références (V3, V4) |
+| **Profondeur de champ** | Bande nette horizontale au centre, flou **progressif** (3 niveaux : net → léger → fort, 11 px max en 1080p) et le lointain/premier plan qui **tombent dans l'ombre** | Signature macro. Un flou brutal ou lumineux fait « tache » : le flou ne doit jamais attirer l'œil plus que le sujet |
+| **Lumière** | Accents néon avec **halo sobre** ; **liseré** lumineux qui file sous le bord d'une carte (rétro-éclairage, derrière la carte) ; texte émissif ; bordure lumineuse ; bouton à teinte tournante. **Pas de faisceaux ni de rayons** qui montent du plan : ils font artificiel | C'est la seule source de couleur. La lumière doit rester naturelle et discrète |
+| **Matière** | Gros chiffres en **relief** (légère épaisseur), bout **hachuré** dans la même capsule que la barre (jamais par-dessus), texte toujours net | Vu en gros plan dans les références (V3, V4) |
+| **Échelle des effets** | Flous d'apparition, halos, ombres et traînées sont réglés en px du **monde** : la caméra les grossit ×3 à ×5. Rester très sobre (flou d'apparition ≤ 1,5 px, halo ≤ 30 px) | Sinon : taches floues et halos géants en gros plan |
 | **Couleurs** | Fond `#070708`, cartes `#111114`→`#16161a`, bords blanc 7 %, texte blanc 92 / 55 / 32 %. Accents : cyan, bleu électrique, menthe, vert, rouge-rose, magenta, ambre, violet | Tout est désaturé sauf ce qui brille |
 | **UI** | Vraie interface à **taille réelle** (texte 11–15 px, chiffres 28–46 px), contenu réaliste. C'est la caméra qui grossit | Les tailles d'app réelle donnent l'authenticité |
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
@@ -68,11 +69,11 @@ Briques disponibles :
 
 | Fichier | Contenu |
 |---|---|
-| `ui/base.tsx` | `Carte` (`relief` obligatoire si elle contient un `Faisceau` ou une `Brume`), `Texte`, `Pastille` (badge néon), `Avatar`, `Icone` (21 icônes au trait) |
+| `ui/base.tsx` | `Carte`, `Texte`, `Pastille` (badge néon), `Avatar`, `Icone` (21 icônes au trait) |
 | `ui/structure.tsx` | `BarreLaterale`, `BarreHaute` (fil d'Ariane, ⌘K, cloche, avatar, `BoutonDegrade` à teinte tournante), `EnTete` (titre + badge ambre + phrase avec % vert) |
-| `ui/cartes.tsx` | `CarteKpi` (+ `trainee`), `CarteCourbe` (courbe lumineuse tracée + comparaison en pointillés + nœuds), `CarteUsage` (alerte rouge + faisceau, compteur en relief, barre + brume), `CarteHistogramme` (barres cyan + courbe rouge), `CarteDivergente` (barres menthe/rouge depuis l'axe, bouts hachurés, brume), `CarteAlertes` (liste à points lumineux) |
-| `cinema/Lumiere.tsx` | `halo()`, `haloTexte()`, `<Faisceau/>` (cône doux debout sur le plan, en vraie 3D), `<Brume/>` (voile au-dessus d'une barre), `<Trainee/>`, `<BordureLumineuse/>`, `relief()` (épaisseur des chiffres), `hachures()` |
-| `cinema/Plateau.tsx` | La caméra : plan incliné, dérive, mise au point d'ouverture, profondeur de champ, **sur-échantillonnage** (le monde est dessiné ×zoom puis réduit : texte net) |
+| `ui/cartes.tsx` | `CarteKpi` (+ `trainee` : liseré lumineux sous la carte), `CarteCourbe` (courbe lumineuse tracée + comparaison en pointillés + nœuds), `CarteUsage` (alerte rouge, compteur en relief, barre lumineuse), `CarteHistogramme` (barres cyan + courbe rouge), `CarteDivergente` (barres menthe/rouge depuis l'axe, bout hachuré dans la capsule), `CarteAlertes` (liste à points lumineux) |
+| `cinema/Lumiere.tsx` | `halo()`, `haloTexte()`, `<Trainee/>` (liseré sous une carte, à rendre AVANT la carte), `<BordureLumineuse/>`, `relief()` (épaisseur des chiffres), `hachures()` |
+| `cinema/Plateau.tsx` | La caméra : plan incliné, dérive, mise au point d'ouverture, profondeur de champ progressive + ombre de profondeur, **sur-échantillonnage** (le monde est dessiné ×zoom puis réduit : texte net) |
 | `cinema/Recul.tsx` | Fin « recul » |
 | `cinema/Logo.tsx` | `LogoTrace` (trait + comète), `LogoMasque` (logo plein ou image) — seulement si `fin.logo` |
 | `cinema/Etalonnage.tsx` | Vignettage + grain |
@@ -110,7 +111,7 @@ Cadrages qui fonctionnent (testés) :
 | Barres / liste (plusieurs lignes) | 3,7 → 3,9 | 47 → 46 | -17 → -19 | `demiLargeur` 15, `fondu` 24 |
 | Barre du haut / bouton | 4,8 → 5,1 | 46 → 45 | -17 → -19 | défaut |
 
-Ordre conseillé des 5 plans : une ouverture calme (en-tête, KPI, traînée lumineuse), un graphique qui pousse, un chiffre d'alerte rouge avec sa lueur, un deuxième graphique (couleurs opposées), puis la barre du haut avec le bouton. Alterne les couleurs d'accent d'un plan à l'autre (cyan → bleu → rouge → menthe/rouge → magenta).
+Ordre conseillé des 5 plans : une ouverture calme (en-tête, KPI, traînée lumineuse), un graphique qui pousse, un chiffre d'alerte rouge avec sa barre lumineuse, un deuxième graphique (couleurs opposées), puis la barre du haut avec le bouton. Alterne les couleurs d'accent d'un plan à l'autre (cyan → bleu → rouge → menthe/rouge → magenta).
 
 Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera`) ou `aucune` ; `logo` vaut `false` par défaut. Valeurs testées sans logo : `part` 0,56, `extinctionDebut` 78, `extinctionDuree` 36, `total` 120. Avec logo (`"logo": true`) : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150, et remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
 
@@ -132,7 +133,9 @@ node scripts/planche.mjs out/brouillon.mp4 --ref <reference.mp4> --pas 0.75    #
 Lis la planche et vérifie :
 - [ ] Chaque plan montre **un seul** composant, qui remplit l'image et reste lisible dans la bande nette
 - [ ] Chaque plan s'ouvre flou et sombre, puis devient net ; la caméra bouge du début à la fin
-- [ ] Les accents brillent (halo visible), la lueur qui monte est douce et naturelle (aucune rayure, aucun bord coupé), rien d'autre n'est coloré
+- [ ] Les accents brillent (halo sobre), aucun faisceau ni rayon, rien d'autre n'est coloré
+- [ ] Aucun flou qui « fait tache » : le lointain et le premier plan sont sombres et doux, aucun élément flou lumineux (badge, texte, glow) n'attire l'œil hors de la zone nette, aucun flou géant pendant les apparitions
+- [ ] Aucune anomalie graphique : rien ne passe par-dessus un texte, rien ne dépasse d'une carte, pas de double contour ni de motif qui transparaît (vérifier aussi le recul à 100 %)
 - [ ] Le texte est net en gros plan (zoom sur une image fixe à 100 % : aucun escalier ni pixel visible)
 - [ ] Les animations sont finies vers l'image 60 du plan ; rien n'apparaît d'un coup
 - [ ] Le recul montre l'UI entière, propre et cohérente (mêmes chiffres que dans les gros plans)
@@ -146,7 +149,7 @@ Pour une image précise : `npx remotion still DashboardFilm out/img.png --frame=
 ```bash
 npx remotion render DashboardFilm out/film.mp4     # 1920×1080, H.264 CRF 16, BT.709 (remotion.config.ts)
 ```
-Compte ~20–30 min sur 4 cœurs pour 20 s (flous + sur-échantillonnage ; le brouillon à `--scale=0.5` prend ~5 min). Pour une qualité maximale (4K), ajoute `--scale=2` (≈ 4× plus long). Livre :
+Compte ~25–35 min sur 4 cœurs pour 20 s (3 niveaux de flou + sur-échantillonnage ; le brouillon à `--scale=0.5` prend ~6 min). Pour une qualité maximale (4K), ajoute `--scale=2` (≈ 4× plus long). Livre :
 - le fichier ;
 - la liste des plans avec leurs temps ;
 - ce qui est fictif (marque, données) ;
@@ -160,10 +163,9 @@ Compte ~20–30 min sur 4 cœurs pour 20 s (flous + sur-échantillonnage ; le br
 3. `interpolate` toujours borné (`prog`, `kf` le font).
 4. Médias via `staticFile()`, `<Img>`, `<Html5Audio>`. La police Inter est servie localement (`public/fonts`).
 5. `Plateau` rend le monde **deux fois** (copie floue + copie nette) : garde le son hors du monde.
-6. `Faisceau` et `Brume` ont besoin de la 3D jusqu'au plan : pas d'`overflow: hidden`, d'`opacity < 1` ni de `filter` sur leurs parents (`Carte relief`, `transformStyle: "preserve-3d"`).
-7. Ne jamais grossir l'UI avec `transform: scale` seul sur un plan 3D : Chrome dessine le plan à sa taille puis l'agrandit (texte pixelisé). `Plateau` sur-échantillonne déjà (CSS `zoom`).
-8. Versions `remotion` / `@remotion/*` strictement identiques.
-9. Remotion est gratuit pour les particuliers et les entreprises de 3 personnes ou moins. Au-delà, une licence est nécessaire (remotion.pro).
+6. Ne jamais grossir l'UI avec `transform: scale` seul sur un plan 3D : Chrome dessine le plan à sa taille puis l'agrandit (texte pixelisé). `Plateau` sur-échantillonne déjà (CSS `zoom`).
+7. Versions `remotion` / `@remotion/*` strictement identiques.
+8. Remotion est gratuit pour les particuliers et les entreprises de 3 personnes ou moins. Au-delà, une licence est nécessaire (remotion.pro).
 
 ## Fichiers de référence
 

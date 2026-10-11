@@ -29,13 +29,16 @@ export const kf = (frame: number, cles: number[], valeurs: number[], courbe = ea
     easing: courbe,
   });
 
-/** Apparition « de l'obscurité » d'un élément : opacité + flou + léger glissement. */
+/**
+ * Apparition « de l'obscurité » d'un élément : opacité + léger flou + léger glissement.
+ * Valeurs en px du monde : la caméra les grossit ×3 à ×5, d'où un flou de départ très faible.
+ */
 export const apparition = (frame: number, debut: number, duree = 12) => {
   const p = prog(frame, debut, duree);
   return {
     opacity: p,
-    filter: p < 1 ? `blur(${(1 - p) * 6}px)` : undefined,
-    transform: `translateY(${(1 - p) * 6}px)`,
+    filter: p < 0.98 ? `blur(${(1 - p) * 1.2}px)` : undefined,
+    transform: `translateY(${(1 - p) * 4}px)`,
   } as const;
 };
 

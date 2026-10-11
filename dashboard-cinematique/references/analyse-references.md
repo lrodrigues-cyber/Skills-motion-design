@@ -35,7 +35,7 @@ Méthode : planches-contacts à 1, 4 et 15 i/s, détection des coupes (`ffmpeg s
 
 ### Lumière (signature du style)
 1. **Halo (bloom)** sur tous les éléments d'accent : barres, courbes, badges, points d'état. Cœur presque blanc, couleur saturée, halo large.
-2. **Rayons volumétriques** qui montent perpendiculairement au plan : au-dessus de la barre rouge « 91 % used » (V4), du bouton « Done » (V5), des barres vertes (V3, V5), de l'icône d'alerte (V4).
+2. **Rayons volumétriques** qui montent perpendiculairement au plan : au-dessus de la barre rouge « 91 % used » (V4), du bouton « Done » (V5), des barres vertes (V3, V5), de l'icône d'alerte (V4). → **non reproduits** : testés puis jugés artificiels et inutiles par l'utilisateur ; on garde seulement les halos.
 3. **Traînée lumineuse** bleue qui file sous une carte (ouverture de V1).
 4. **Texte/icône émissif** blanc (« My rituals » qui s'allume, V5).
 5. **Bordure parcourue de lumière** dégradée bleu → violet → rouge (champ de recherche, V5).

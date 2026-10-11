@@ -2,10 +2,10 @@ import React from "react";
 import { random } from "remotion";
 import { neon, type Neon } from "../style/tokens";
 
-// Toute la lumière du style passe par ici. Cinq effets relevés dans les références :
+// Toute la lumière du style passe par ici. Effets relevés dans les références :
+// (les tailles sont en px du MONDE : la caméra les grossit ×3 à ×5 → rester sobre)
 // 1. halo (bloom) autour des éléments d'accent      → halo(), haloTexte()
-// 2. lumière qui monte du plan (volumétrique douce)  → <Faisceau/> (point/icône), <Brume/> (barre)
-// 3. traînée lumineuse qui file le long d'une carte  → <Trainee/>
+// 2. liseré lumineux sous une carte (rétro-éclairage) → <Trainee/>
 // 4. texte/icône émissif blanc                       → haloTexte("blanc")
 // 5. bordure parcourue par une lumière dégradée      → <BordureLumineuse/>
 
@@ -19,10 +19,10 @@ export const halo = (n: Neon, force = 1) => {
   const c = neon[n];
   if (force <= 0) return "none";
   return [
-    `0 0 ${2 * force}px ${alpha(c.coeur, 0.9 * Math.min(1, force))}`,
-    `0 0 ${8 * force}px ${alpha(c.couleur, 0.85 * Math.min(1, force))}`,
-    `0 0 ${22 * force}px ${alpha(c.halo, 0.6 * Math.min(1, force))}`,
-    `0 0 ${48 * force}px ${alpha(c.halo, 0.35 * Math.min(1, force))}`,
+    `0 0 ${1.5 * force}px ${alpha(c.coeur, 0.85 * Math.min(1, force))}`,
+    `0 0 ${5 * force}px ${alpha(c.couleur, 0.75 * Math.min(1, force))}`,
+    `0 0 ${13 * force}px ${alpha(c.halo, 0.5 * Math.min(1, force))}`,
+    `0 0 ${28 * force}px ${alpha(c.halo, 0.22 * Math.min(1, force))}`,
   ].join(", ");
 };
 
@@ -31,9 +31,9 @@ export const haloTexte = (n: Neon, force = 1) => {
   const c = neon[n];
   if (force <= 0) return "none";
   return [
-    `0 0 ${3 * force}px ${alpha(c.couleur, 0.9)}`,
-    `0 0 ${10 * force}px ${alpha(c.halo, 0.7)}`,
-    `0 0 ${24 * force}px ${alpha(c.halo, 0.45)}`,
+    `0 0 ${2 * force}px ${alpha(c.couleur, 0.8)}`,
+    `0 0 ${6 * force}px ${alpha(c.halo, 0.55)}`,
+    `0 0 ${14 * force}px ${alpha(c.halo, 0.3)}`,
   ].join(", ");
 };
 
@@ -46,108 +46,6 @@ export const remplissageNeon = (n: Neon, sens: "horizontal" | "vertical" = "vert
 
 export const couleurAlpha = alpha;
 
-/**
- * Faisceau : cône de lumière DOUX qui monte perpendiculairement au plan, comme la lumière
- * qui sort de l'icône d'alerte (vidéo 4) ou du bouton « Done » (vidéo 5).
- * Aucune rayure, aucun bord : un cœur étroit + un halo large, très flous, qui s'effacent
- * vers le haut et sur les côtés. Le parent doit garder `transformStyle: "preserve-3d"`.
- */
-export const Faisceau: React.FC<{
-  couleur: Neon;
-  largeur: number; // largeur de la source (px du monde)
-  hauteur?: number;
-  intensite?: number; // 0→1, animable
-  style?: React.CSSProperties;
-}> = ({ couleur, largeur, hauteur = 60, intensite = 1, style }) => {
-  const c = neon[couleur];
-  const l = largeur * 2.2;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: largeur / 2 - l / 2,
-        bottom: "40%",
-        width: l,
-        height: hauteur,
-        transformOrigin: "50% 100%",
-        transform: "rotateX(-90deg)",
-        pointerEvents: "none",
-        opacity: intensite,
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: `radial-gradient(ellipse 48% 100% at 50% 100%, ${alpha(c.couleur, 0.5)}, ${alpha(c.halo, 0.18)} 45%, transparent 78%)`,
-          filter: `blur(${Math.max(2, largeur * 0.25)}px)`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: "36%",
-          right: "36%",
-          bottom: 0,
-          height: "80%",
-          borderRadius: "50% 50% 0 0",
-          background: `linear-gradient(to top, ${alpha(c.coeur, 0.75)}, ${alpha(c.couleur, 0.35)} 30%, ${alpha(c.couleur, 0.1)} 65%, transparent)`,
-          filter: `blur(${Math.max(1.5, largeur * 0.12)}px)`,
-        }}
-      />
-    </div>
-  );
-};
-
-/**
- * Brume : voile de lumière qui monte doucement au-dessus d'une barre lumineuse
- * (barre rouge « 91% used », barres vertes). Dégradé continu, plus fort du côté brillant,
- * fondu sur les bords : ça doit ressembler à la lueur d'un néon dans l'air, pas à des traits.
- */
-export const Brume: React.FC<{
-  couleur: Neon;
-  largeur: number;
-  hauteur?: number;
-  intensite?: number;
-  /** côté le plus lumineux (bout de la barre) */
-  cote?: "gauche" | "droite";
-  style?: React.CSSProperties;
-}> = ({ couleur, largeur, hauteur = 34, intensite = 1, cote = "droite", style }) => {
-  const c = neon[couleur];
-  const fonduH = `linear-gradient(90deg, transparent, #000 ${cote === "droite" ? 35 : 8}%, #000 ${cote === "droite" ? 92 : 65}%, transparent)`;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 0,
-        bottom: "45%",
-        width: largeur,
-        height: hauteur,
-        transformOrigin: "50% 100%",
-        transform: "rotateX(-90deg)",
-        pointerEvents: "none",
-        opacity: intensite,
-        WebkitMaskImage: fonduH,
-        maskImage: fonduH,
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: "100%",
-          background: `linear-gradient(to top, ${alpha(c.couleur, 0.42)}, ${alpha(c.halo, 0.16)} 35%, ${alpha(c.halo, 0.05)} 70%, transparent)`,
-          filter: "blur(5px)",
-        }}
-      />
-    </div>
-  );
-};
-
 /** Relief : épaisseur des gros chiffres (extrusion vers le bas du plan, comme « 100 000 » en vidéo 4). */
 export const relief = (profondeur = 4, pas = 0.5) =>
   Array.from({ length: profondeur }, (_, i) => {
@@ -157,57 +55,50 @@ export const relief = (profondeur = 4, pas = 0.5) =>
 
 /** Hachures du segment « projeté » au bout des barres (vidéo 3). */
 export const hachures = (n: Neon) =>
-  `repeating-linear-gradient(-55deg, ${alpha(neon[n].couleur, 0.55)} 0 1.6px, transparent 1.6px 5px)`;
+  `repeating-linear-gradient(-55deg, ${alpha(neon[n].couleur, 0.45)} 0 1.3px, transparent 1.3px 5px), ${alpha(neon[n].couleur, 0.08)}`;
 
 /**
- * Traînée lumineuse : un trait de lumière flou qui s'étire le long d'un bord
- * (ouverture de la vidéo 1 : la lumière bleue qui file sous la carte KPI).
+ * Traînée : liseré de lumière qui file le long du bord BAS d'une carte (ouverture de la vidéo 1).
+ * Elle se place DERRIÈRE la carte (à rendre avant elle) : la carte opaque cache la moitié haute,
+ * on ne voit que la lumière qui déborde sous le bord, comme un rétro-éclairage.
+ * `x`, `y` = coin bas-gauche de la carte ; `largeur` = largeur de la carte.
  */
 export const Trainee: React.FC<{
   couleur: Neon;
-  progression: number; // 0→1
+  progression: number; // 0→1 : la lumière file de gauche à droite
+  x: number;
+  y: number;
   largeur: number;
   epaisseur?: number;
-  style?: React.CSSProperties;
-}> = ({ couleur, progression, largeur, epaisseur = 10, style }) => {
+}> = ({ couleur, progression, x, y, largeur, epaisseur = 3 }) => {
   const c = neon[couleur];
   const w = largeur * progression;
+  if (w <= 0) return null;
+  const e = epaisseur;
   return (
-    <div style={{ position: "absolute", width: largeur, height: epaisseur * 6, pointerEvents: "none", ...style }}>
+    <div style={{ position: "absolute", left: x + 6, top: y - e * 4, width: largeur - 12, height: e * 8, pointerEvents: "none" }}>
       <div
         style={{
           position: "absolute",
           left: 0,
-          top: epaisseur * 2.5,
+          top: e * 1.5,
           width: w,
-          height: epaisseur,
-          borderRadius: epaisseur,
-          background: `linear-gradient(90deg, transparent, ${alpha(c.halo, 0.6)} 20%, ${c.couleur} 60%, ${c.coeur} 92%, transparent)`,
-          filter: `blur(${epaisseur * 0.9}px)`,
+          height: e * 5,
+          borderRadius: e * 3,
+          background: `linear-gradient(90deg, transparent, ${alpha(c.halo, 0.35)} 35%, ${alpha(c.couleur, 0.6)} 90%, transparent)`,
+          filter: `blur(${e * 1.6}px)`,
         }}
       />
       <div
         style={{
           position: "absolute",
           left: 0,
-          top: epaisseur * 1.2,
+          top: e * 3.6,
           width: w,
-          height: epaisseur * 3.5,
-          borderRadius: epaisseur * 3,
-          background: `linear-gradient(90deg, transparent, ${alpha(c.halo, 0.35)} 40%, ${alpha(c.couleur, 0.55)} 85%, transparent)`,
-          filter: `blur(${epaisseur * 2.2}px)`,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: epaisseur * 2.9,
-          width: w,
-          height: epaisseur * 0.25,
-          borderRadius: epaisseur,
-          background: `linear-gradient(90deg, transparent, ${alpha(c.couleur, 0.7)} 40%, ${c.coeur} 95%, transparent)`,
-          filter: "blur(1px)",
+          height: e * 0.8,
+          borderRadius: e,
+          background: `linear-gradient(90deg, transparent, ${alpha(c.couleur, 0.8)} 45%, ${c.coeur} 95%, transparent)`,
+          filter: `blur(${e * 0.35}px)`,
         }}
       />
     </div>
