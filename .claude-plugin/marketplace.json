@@ -1,0 +1,21 @@
+{
+  "name": "motion-design-skills",
+  "description": "Skills Claude de motion design : un skill par style de montage vidéo.",
+  "owner": {
+    "name": "lrodrigues-cyber",
+    "url": "https://github.com/lrodrigues-cyber"
+  },
+  "plugins": [
+    {
+      "name": "motion-design",
+      "source": "./",
+      "description": "Vidéos motion design générées par Claude : dashboard cinématique (UI SaaS sombre en macro 3D, néons, musique et effets sonores originaux).",
+      "version": "1.0.0",
+      "author": { "name": "lrodrigues-cyber" },
+      "homepage": "https://github.com/lrodrigues-cyber/Skills-motion-design",
+      "repository": "https://github.com/lrodrigues-cyber/Skills-motion-design",
+      "keywords": ["motion-design", "video", "remotion", "dashboard", "saas", "animation"],
+      "category": "design"
+    }
+  ]
+}
