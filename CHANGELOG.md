@@ -12,7 +12,7 @@ L'interface du client est reproduite à l'identique : c'est désormais la règle
 - **Thème clair** : `"theme": "clair"` dans `montage.json` adoucit l'ombre de profondeur et le vignettage, et adapte le repérage du son (aplats et encre qui apparaissent au lieu de lumière qui s'allume).
 - **Icônes Lucide** incluses (`lucide-react`), utilisées par la plupart des tableaux de bord Tailwind et shadcn.
 - Nouvelle fiche `references/fidelite.md` : méthode de mesure, reconstruction, contrôle et animation fidèle, avec l'exemple chiffré d'une interface claire reconstruite à 99,5 %.
-- `npm run brouillon` rend la composition muette (le brouillon ne dépend plus de la bande-son) ; la fin « barre » prend ses `horloges` dans `montage.json`.
+- `npm run brouillon` rend la composition muette (le brouillon ne dépend plus de la bande-son) ; la fin « barre » prend ses `horloges` dans `montage.json` ; sur une interface claire, le recul arrive plus visible (`depart` 0,75) pour ne pas se lire comme une plongée au noir.
 
 ## dashboard-cinematique 1.3.0 (12 octobre 2026)
 

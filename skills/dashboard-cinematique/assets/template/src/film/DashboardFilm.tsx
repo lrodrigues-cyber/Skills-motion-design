@@ -73,7 +73,7 @@ export const DashboardFilm: React.FC<{ avecSon?: boolean }> = ({ avecSon = true 
       <Sequence from={DEBUT_FIN} durationInFrames={FIN.total} name={`fin (${FIN.type})${FIN.logo ? " + logo" : ""}`}>
         <AbsoluteFill style={{ background: "#050506" }}>
           {FIN.type === "recul" ? (
-            <Recul monde={MONDE} part={FIN.part} sortie={{ debut: FIN.extinctionDebut, duree: FIN.extinctionDuree }}>
+            <Recul monde={MONDE} part={FIN.part} depart={CLAIR ? 0.75 : 0.45} sortie={{ debut: FIN.extinctionDebut, duree: FIN.extinctionDuree }}>
               <Dashboard marque={montage.marque} />
             </Recul>
           ) : (

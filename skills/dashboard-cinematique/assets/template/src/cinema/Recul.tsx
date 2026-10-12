@@ -12,13 +12,18 @@ export const Recul: React.FC<{
   monde: { largeur: number; hauteur: number };
   part?: number; // largeur à l'écran / largeur de l'image
   sortie: { debut: number; duree: number };
+  /**
+   * Opacité à la coupe (elle monte à 1 en 12 images). 0,45 sur une interface sombre ; plus haut sur une
+   * interface claire (~0,75), sinon le blanc à demi-opacité sur fond noir se lit comme une plongée au noir.
+   */
+  depart?: number;
   children: React.ReactNode;
-}> = ({ monde, part = 0.56, sortie, children }) => {
+}> = ({ monde, part = 0.56, sortie, depart = 0.45, children }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const echelle = (width * part) / monde.largeur;
   // pas de noir à la coupe : le recul arrive déjà à moitié visible et finit d'apparaître en 12 images
-  const entree = mix(0.45, 1, prog(frame, 0, 12, ease.sortie));
+  const entree = mix(depart, 1, prog(frame, 0, 12, ease.sortie));
   const respiration = mix(0.985, 1.03, prog(frame, 0, sortie.debut + sortie.duree, ease.derive));
   const extinction = 1 - prog(frame, sortie.debut, sortie.duree, ease.doux);
   return (
