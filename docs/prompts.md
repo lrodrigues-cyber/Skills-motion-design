@@ -61,7 +61,7 @@ FIN
 
 SON
 - Musique : [générée par le skill (par défaut) / ma musique jointe, avec les effets sonores seuls]
-- Ambiance : [sombre et tendue (par défaut) / plus lumineuse / plus planante]
+- Profil sonore : [dynamique : électro entraînante, « drop » sur la 1re coupe, effets d'interface sur chaque animation (par défaut) / cinéma : musique de film sombre]
 
 LIVRAISON
 - Usage : [site web / publicité / LinkedIn / salon]
