@@ -55,8 +55,8 @@ Plus le brief est précis, moins il faut de retouches. Avant d'écrire votre dem
 | 2. Questions | Claude | Au plus 2 ou 3 questions, seulement sur ce qu'il ne peut pas deviner (données, plans). Il ne vous demande pas de choix créatifs : la recette s'en charge | 1 min |
 | 3. Création du projet | Claude | Copie du gabarit, installation de Remotion | 1 à 3 min |
 | 4. Reconstruction de l'interface | Claude | Votre tableau de bord est recréé en code, à taille réelle | 5 à 15 min |
-| 5. Montage et bande-son | Claude | Choix des 5 plans, cadrages, effets sonores placés sur les animations, génération de la musique | 2 à 5 min |
-| 6. Brouillon et contrôle | Claude | Rendu en demi-résolution, planche-contact, contrôle automatique de la fluidité, corrections | 5 à 10 min |
+| 5. Montage | Claude | Choix des 5 plans, cadrages, rythme | 2 à 5 min |
+| 6. Brouillon, son et contrôle | Claude | Rendu en demi-résolution, repérage automatique des animations à l'image, bande-son calée dessus, planche-contact, contrôle de la fluidité, corrections | 6 à 12 min |
 | 7. Validation | Vous | Vous regardez le brouillon et demandez vos retouches ([prompts de retouche](prompts.md#7-retouches)) | Variable |
 | 8. Rendu final | Claude | Rendu 1920×1080 en qualité maximale (4K en option) | 25 à 35 min sur 4 cœurs, moins sur une machine plus puissante |
 | 9. Livraison | Claude | Le fichier MP4, la liste des plans et leurs temps, ce qui est fictif, et comment modifier | |
@@ -86,7 +86,9 @@ Le film suit toujours la même architecture, relevée sur les vidéos de référ
 
 Chaque plan est une **coupe franche** : pas de fondu ni de passage par le noir. Le nouveau plan arrive déjà visible, légèrement flou, et devient net en 0,4 s. La caméra glisse en continu pendant tout le film.
 
-La musique est **calée sur le montage** : chaque plan dure exactement une mesure, et chaque coupe tombe sur un temps fort, avec un changement d'accord et un coup grave. Si la durée d'un plan change, le tempo s'ajuste tout seul.
+La musique est **calée sur le montage** : chaque plan dure exactement une mesure, et chaque coupe tombe sur un temps fort, avec un changement d'accord et une frappe. Si la durée d'un plan change, le tempo s'ajuste tout seul.
+
+Les effets sonores sont **calés sur les animations** : un script regarde le brouillon image par image, repère tout ce qui s'allume (courbe tracée, barre qui pousse, bouton qui apparaît) et la bande-son pose un effet sur chaque événement, à l'image près, avec la musique qui se creuse dessous pour qu'on l'entende.
 
 ## 5. Ce que vous pouvez régler
 
@@ -113,7 +115,8 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 | Mode | Mineur (sombre, tendu) ou majeur (plus lumineux) | Mineur |
 | Style | `pulse` (basse pulsée et batterie électronique feutrée) ou `nappe` (sans batterie, plus planant) | `pulse` |
 | Révélation | Arrêt net, comme un arrêt de bande, ou filtre qui se ferme | Arrêt net |
-| Effets sonores | Montée (courbe qui se trace), une note par barre (barres qui poussent), whoosh, coup grave, ping, calés sur l'animation de votre choix | Ping d'ouverture, accent sur chaque coupe, montée, notes des barres, révélation |
+| Effets sonores | Automatiques sur chaque animation repérée à l'image ; en plus, à la demande : whoosh, coup grave, ping | Ping d'ouverture, frappe sur chaque coupe, un effet par animation, révélation |
+| Énergie | Plus ou moins de batterie, de basse, de frappes, d'effets | Percutante dès le 2e plan |
 | Dosage des couches | Basse, batterie, nappe, arpège, réverbération, effets : plus ou moins présents | Réglé à l'oreille sur les références |
 | Version « effets sonores seuls » | Pour TikTok et Reels, où l'on ajoute un son tendance | Proposée à la livraison |
 
@@ -147,7 +150,10 @@ Le projet livré est un projet [Remotion](https://www.remotion.dev) standard. De
 | Commande | Effet |
 |---|---|
 | `npm run studio` | Ouvre Remotion Studio dans le navigateur : lecture image par image, sans rendu |
-| `npm run son` | Régénère la bande-son. À relancer **après chaque modification du montage** |
+| `npm run brouillon` | Rend un brouillon muet en demi-résolution (`out/brouillon.mp4`, ~6 min) |
+| `npm run reperage` | Repère les animations du brouillon (`src/film/reperage.json`). À refaire après tout changement d'interface ou de montage |
+| `npm run son` | Régénère la bande-son (musique + effets calés sur le repérage) |
+| `npm run sonorise` | Pose la bande-son sur le brouillon (`out/brouillon-son.mp4`) pour l'écouter sans refaire le rendu |
 | `npm run render` | Rend le film final dans `out/dashboard-film.mp4` |
 | `node scripts/planche.mjs out/film.mp4` | Crée une planche-contact (`out/planche.png`) pour vérifier le film d'un coup d'œil |
 | `node scripts/controle.mjs out/film.mp4` | Contrôle la fluidité : images ratées, plongées au noir, plans figés |

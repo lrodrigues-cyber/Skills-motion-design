@@ -161,7 +161,9 @@ Formulations qui fonctionnent bien :
 |---|---|
 | Ambiance plus planante | « Passe la musique en style nappe, sans batterie. » |
 | Ambiance plus lumineuse | « Passe la musique en mode majeur, tonalité de la. » |
-| Plus d'énergie | « Rends la basse et la grosse caisse plus présentes, et vérifie avec l'écoute automatique. » |
+| Plus d'énergie | « Rends la batterie et la basse encore plus présentes, et vérifie avec l'écoute automatique. » |
+| Effets plus discrets | « Les effets des animations sont trop forts : baisse-les de 30 %. » |
+| Un effet manque | « Le badge du plan 1 s'allume sans bruit : vérifie le repérage et ajoute-lui un effet. » |
 | Son sur une animation | « Au plan 3, ajoute un whoosh quand la carte traverse l'image. » |
 | Moins d'effets | « Garde seulement les accents de coupe et la révélation. » |
 | Révélation plus douce | « À la révélation, ferme le filtre au lieu de couper net. » |

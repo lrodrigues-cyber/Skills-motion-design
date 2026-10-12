@@ -165,6 +165,15 @@ Le fichier `public/audio/bande-son.wav` est généré à la création du projet,
 </details>
 
 <details>
+<summary><b>Les effets sonores ne tombent pas sur les animations</b></summary>
+
+Les effets se calent sur un repérage du brouillon (`src/film/reperage.json`). Si l'interface ou le montage ont changé depuis, le repérage est périmé : `npm run son` l'ignore et affiche un avertissement. Demandez : *« Refais le brouillon, le repérage et la bande-son, puis pose-la sur le brouillon. »*
+
+Si une animation précise reste muette, c'est qu'elle ajoute trop peu de lumière pour être repérée (un texte gris, par exemple). Demandez un effet à la main sur cette animation ([prompts de retouche](prompts.md#7-retouches)).
+
+</details>
+
+<details>
 <summary><b>Le son fait « cheap », « jeu vidéo » ou ne colle pas à l'image</b></summary>
 
 La version 1.1 du skill a été refaite pour ça : musique calée sur les coupes, palette de musique de film, aucun son pincé ni clochette. Si une retouche a dégradé le son, demandez : *« Passe l'écoute automatique sur la bande-son et corrige ce qu'elle signale. »*

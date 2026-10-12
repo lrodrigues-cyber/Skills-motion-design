@@ -43,7 +43,9 @@ console.log(`
 Prêt. Ensuite :
   cd ${path.relative(process.cwd(), dossier) || "."}
   npx remotion studio                                   # aperçu en direct
-  node scripts/bande-son.mjs                            # après chaque changement de montage.json
+  npm run brouillon                                     # brouillon muet, demi-résolution (~6 min)
+  npm run reperage && npm run son && npm run sonorise   # effets calés sur les animations → out/brouillon-son.mp4
+  npm run controle                                      # fluidité des coupes
   npx remotion render DashboardFilm out/film.mp4        # rendu final 1920×1080
   node scripts/planche.mjs out/film.mp4 --ref <reference.mp4>   # comparaison visuelle
 Navigateur déjà installé ? REMOTION_BROWSER=/chemin/vers/chrome npx remotion render …`);

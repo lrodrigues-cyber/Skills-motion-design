@@ -1,0 +1,198 @@
+{
+ "video": "dashboard-film-v6.mp4",
+ "images": 570,
+ "fps": 30,
+ "empreinte": "8eca167ca7d555e2",
+ "evenements": [
+  {
+   "plan": "ouverture-kpi",
+   "image": 8,
+   "pic": 12,
+   "fin": 16,
+   "force": 0.106,
+   "courbe": [
+    9.257,
+    12.53,
+    19.247,
+    22.829,
+    25.801,
+    24.746,
+    16.776,
+    7.392,
+    3.668
+   ],
+   "taille": "petit"
+  },
+  {
+   "plan": "courbe-revenus",
+   "image": 3,
+   "pic": 4,
+   "fin": 8,
+   "force": 0.935,
+   "courbe": [
+    192.184,
+    338.644,
+    318.979,
+    211.215,
+    128.33,
+    67.001
+   ],
+   "taille": "grand"
+  },
+  {
+   "plan": "usage-rouge",
+   "image": 5,
+   "pic": 8,
+   "fin": 20,
+   "force": 0.624,
+   "courbe": [
+    30.425,
+    51.451,
+    106.904,
+    121.349,
+    100.598,
+    85.277,
+    65.666,
+    49.316,
+    43.29,
+    40.083,
+    35.394,
+    28.545,
+    25.717,
+    21.284,
+    16.805,
+    15.832
+   ],
+   "taille": "grand"
+  },
+  {
+   "plan": "barres-divergentes",
+   "image": 3,
+   "pic": 4,
+   "fin": 7,
+   "force": 0.28,
+   "courbe": [
+    74.399,
+    88.797,
+    80.581,
+    66.199,
+    65.987
+   ],
+   "taille": "moyen"
+  },
+  {
+   "plan": "barres-divergentes",
+   "image": 7,
+   "pic": 9,
+   "fin": 11,
+   "force": 0.277,
+   "courbe": [
+    65.987,
+    81.485,
+    82.879,
+    75.385,
+    65.976
+   ],
+   "taille": "moyen"
+  },
+  {
+   "plan": "barres-divergentes",
+   "image": 11,
+   "pic": 14,
+   "fin": 16,
+   "force": 0.35,
+   "courbe": [
+    65.976,
+    68.882,
+    90.303,
+    91.45,
+    80.889,
+    72.674
+   ],
+   "taille": "moyen"
+  },
+  {
+   "plan": "barres-divergentes",
+   "image": 16,
+   "pic": 19,
+   "fin": 26,
+   "force": 0.817,
+   "courbe": [
+    72.674,
+    92.928,
+    146.212,
+    168.474,
+    160.502,
+    137.31,
+    104.075,
+    77.408,
+    57.051,
+    42.909,
+    37.81
+   ],
+   "taille": "grand"
+  },
+  {
+   "plan": "barre-haute-bouton",
+   "image": 8,
+   "pic": 9,
+   "fin": 13,
+   "force": 0.18,
+   "courbe": [
+    26.928,
+    70.033,
+    68.938,
+    40.406,
+    22.736,
+    12.288
+   ],
+   "taille": "petit"
+  },
+  {
+   "plan": "barre-haute-bouton",
+   "image": 14,
+   "pic": 16,
+   "fin": 19,
+   "force": 1,
+   "courbe": [
+    150.426,
+    384.615,
+    387.114,
+    229.936,
+    124.077,
+    67.43
+   ],
+   "taille": "grand"
+  },
+  {
+   "plan": "barre-haute-bouton",
+   "image": 25,
+   "pic": 27,
+   "fin": 29,
+   "force": 0.083,
+   "courbe": [
+    8.241,
+    23.469,
+    43.041,
+    26.182,
+    11.248
+   ],
+   "taille": "petit"
+  },
+  {
+   "plan": "barre-haute-bouton",
+   "image": 34,
+   "pic": 35,
+   "fin": 38,
+   "force": 0.082,
+   "courbe": [
+    25.674,
+    42.713,
+    28.493,
+    8.621,
+    5.229
+   ],
+   "taille": "petit"
+  }
+ ]
+}

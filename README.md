@@ -20,7 +20,7 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 | Skill | Style | Idéal pour | Version |
 |---|---|---|---|
-| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | Interface SaaS sombre filmée en macro sur un plan 3D incliné, profondeur de champ courte, accents néon, plans de 3 s en coupe franche, recul final sur l'interface entière. Musique de film électronique originale, calée sur les coupes, et effets sonores de cinéma. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.1.0 |
+| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | Interface SaaS sombre filmée en macro sur un plan 3D incliné, profondeur de champ courte, accents néon, plans de 3 s en coupe franche, recul final sur l'interface entière. Musique de film électronique percutante, calée sur les coupes, et effets sonores calés automatiquement sur chaque animation. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.2.0 |
 
 D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
@@ -30,7 +30,7 @@ Vous décrivez votre produit et vous joignez des captures de votre interface. Cl
 
 - **une vidéo MP4** en 1920×1080, 30 images/s, d'environ 20 s (4K en option) ;
 - **5 plans rapprochés de 3 s**, un élément de l'interface par plan (chiffre clé, courbe, alerte, graphique, bouton), puis un **recul** sur le tableau de bord complet ;
-- **une bande-son originale** composée pour le montage : chaque coupe tombe sur un temps fort, l'arrangement monte en tension plan après plan, les effets sonores suivent les animations à l'image près, et la révélation finale est marquée par une explosion sourde et un whoosh ;
+- **une bande-son originale** composée pour le montage : chaque coupe tombe sur un temps fort, la musique tape dès le 2e plan, chaque animation visible a son effet sonore (repéré automatiquement à l'image près), et la révélation finale est marquée par une explosion sourde et un whoosh ;
 - **le projet source** ([Remotion](https://www.remotion.dev)), pour modifier un chiffre, un plan ou la musique et relancer le rendu ;
 - sur demande, une **version « effets sonores seuls »** pour ajouter un son tendance sur TikTok ou Reels.
 

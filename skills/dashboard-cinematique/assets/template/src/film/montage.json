@@ -26,7 +26,7 @@
         "inclinaison": {"de": 48, "a": 48},
         "rotation": {"de": -19, "a": -21}
       },
-      "son": [{"type": "montee", "a": 2, "duree": 30}]
+      "son": []
     },
     {
       "id": "usage-rouge",
@@ -51,7 +51,7 @@
         "rotation": {"de": -17, "a": -19},
         "nettete": {"demiLargeur": 15, "fondu": 24}
       },
-      "son": [{"type": "impulsions", "a": 2, "ecart": 5, "nombre": 4}]
+      "son": []
     },
     {
       "id": "barre-haute-bouton",

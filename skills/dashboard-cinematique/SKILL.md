@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : une UI SaaS sombre filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, accents néon qui brillent, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière (sans logo par défaut), musique électronique sombre originale et effets sonores calés à l'image. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -34,7 +34,7 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
 | **Rythme interne** | Il se passe quelque chose **dès la coupe** : les animations du plan sont pré-lancées (horloges négatives, ex. `-6`), le sujet est déjà là · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Un plan qui commence vide (0,3–0,6 s sans rien) casse la dynamique |
 | **Fin** | **Pas de logo par défaut** (choix de l'utilisateur). `recul` : l'UI entière à plat (50–64 % de la largeur) qui respire ~2,5 s puis s'éteint ; ou `barre` (gros plan ⌘K/cloche/bouton qui s'éteint) ; ou `aucune`. Le logo tracé à la comète bleue (V1–V4) reste disponible avec `"logo": true`, seulement si on le demande | V2, V3 = recul ; V1, V4 = barre ; V5 = aucune |
-| **Son** | **Il colle au montage** : chaque plan = une mesure dont le 1er temps tombe sur la coupe, l'accord change sur la coupe (souffle inversé + coup grave). Palette de **musique de film électronique** : sub, basse pulsée filtrée, nappe sombre, arpège grave et doux, batterie feutrée qui entre plan après plan. **Jamais de son pincé, de clochette ni d'arpège clair** (entendus comme harpe, jeu vidéo, musique pour enfants). Effets de cinéma : ping sonar à l'ouverture, grondement qui monte, puis à la révélation la musique s'arrête : explosion sourde, whoosh, battements, silence. Volume presque constant (+3 dB du 1er au dernier plan) | Écouté et mesuré sur les 5 références (YAMNet) : voir `references/recette-son.md` |
+| **Son** | **Il colle au montage** : chaque plan = une mesure dont le 1er temps tombe sur la coupe, l'accord change sur la coupe (souffle inversé + coup grave). Palette de **musique de film électronique** : sub, basse pulsée filtrée, nappe sombre, arpège grave et doux, batterie électronique qui entre plan après plan. **Jamais de son pincé, de clochette ni d'arpège clair** (entendus comme harpe, jeu vidéo, musique pour enfants). **Chaque animation visible a son effet, calé à l'image** : le script `reperage.mjs` lit le brouillon, repère ce qui s'allume (courbe, barre, bouton…) et la bande-son pose un effet qui suit la courbe exacte de l'animation, avec la musique qui se creuse dessous. Musique percutante : 4 temps dès le 2e plan, frappe + charleston dès le 3e, basse saturée, « braam » sur les coupes. Effets de cinéma : ping sonar à l'ouverture, grondement qui monte, puis à la révélation la musique s'arrête : explosion sourde, whoosh, battements, silence | Écouté et mesuré sur les 5 références (YAMNet) : voir `references/recette-son.md` |
 
 ## Workflow
 
@@ -99,7 +99,7 @@ Un plan :
     "rotation": { "de": -19, "a": -21 },
     "nettete": { "demiLargeur": 7, "fondu": 20 }
   },
-  "son": [{ "type": "montee", "a": 2, "duree": 30 }]
+  "son": []
 }
 ```
 - `horloges` : les blocs qui s'animent dans ce plan (valeur = décalage en images). Mets une valeur **négative** (-6 ; -12 pour la barre du haut) pour que l'animation soit déjà lancée à la coupe : jamais de début de plan vide.
@@ -119,18 +119,23 @@ Ordre conseillé des 5 plans : une ouverture calme (en-tête, KPI, traînée lum
 
 Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera`) ou `aucune` ; `logo` vaut `false` par défaut. Valeurs testées sans logo : `part` 0,56, `extinctionDebut` 78, `extinctionDuree` 36, `total` 120. Avec logo (`"logo": true`) : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150, et remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
 
-### 5. Le son
+### 5. Le son : il se cale sur l'image du brouillon
+
+Les effets sonores ne se placent **pas à la main** : ils se calent sur ce qui s'anime réellement à l'écran. Après chaque brouillon :
 
 ```bash
-node scripts/bande-son.mjs            # après CHAQUE modification de montage.json
+npm run brouillon     # rendu muet en demi-résolution (~6 min)
+npm run reperage      # lit out/brouillon.mp4 : chaque bouffée de lumière = un événement → src/film/reperage.json
+npm run son           # musique calée sur les coupes + un effet par événement, qui suit la courbe de l'animation
+npm run sonorise      # pose la bande-son sur le brouillon → out/brouillon-son.mp4 (à écouter)
 ```
-Le script place tout seul le ping d'ouverture, les accents de coupe et la révélation, et cale la musique sur les coupes. Toi, tu ajoutes au plus 1 à 2 effets **calés sur l'horloge de l'animation** : `montee` pendant une courbe qui se trace, `impulsions` (une note par barre : `ecart`, `nombre`) quand des barres poussent, `whoosh` quand un élément traverse. Lis `references/recette-son.md` (types d'effets, réglages `tonique`, `mode`, `style` pulse/nappe, `revelation`). Ne remplace jamais un son par un son pincé, une cloche ou un arpège clair. Musique du client : `--sfx-seuls`.
+`reperage.mjs` liste les événements par plan (ex. « courbe-revenus image 3→8 (grand) »). Vérifie que chaque animation importante y figure. `bande-son.mjs` **refuse un repérage périmé** (interface ou montage changés depuis) et le dit : refais alors brouillon + repérage. Les effets `son` du montage restent possibles, **en plus** (whoosh d'un élément qui traverse, ping…). Lis `references/recette-son.md` (réglages `tonique`, `mode`, `style` pulse/nappe, `revelation`, dosage `reglages`). Ne remplace jamais un son par un son pincé, une cloche ou un arpège clair. Musique du client : `--sfx-seuls`.
 
 ### 6. Vérifier (ne pas sauter)
 
 ```bash
 npx tsc --noEmit
-REMOTION_CONCURRENCY=4 npx remotion render DashboardFilm out/brouillon.mp4 --scale=0.5 --crf=20 --x264-preset=veryfast
+npm run brouillon && npm run reperage && npm run son && npm run sonorise   # voir étape 5
 node scripts/planche.mjs out/brouillon.mp4 --pas 0.5
 node scripts/planche.mjs out/brouillon.mp4 --ref <reference.mp4> --pas 0.75    # si une référence existe
 node scripts/controle.mjs out/brouillon.mp4     # fluidité : images ratées, plongées au noir, arrêts (doit dire « aucun problème »)
@@ -146,13 +151,14 @@ Lis la planche et vérifie :
 - [ ] Les animations sont finies vers l'image 60 du plan ; rien n'apparaît d'un coup
 - [ ] Le recul montre l'UI entière, propre et cohérente (mêmes chiffres que dans les gros plans)
 - [ ] Fin : le recul respire puis s'éteint proprement (et, seulement si `logo: true`, le logo se trace au centre)
-- [ ] Son : chaque coupe est marquée (changement d'accord + coup grave), l'arrangement s'épaissit à chaque plan sans que le 1er plan soit trop faible, les effets tombent sur l'animation (courbe = montée, barres = une note chacune), la révélation est le moment le plus fort (explosion sourde, whoosh), puis silence. Rien de pincé ni de « ding » (`ecoute.py` le vérifie)
+- [ ] Son : `bande-son.mjs` ne signale ni repérage absent ni repérage périmé ; chaque animation visible a son effet pile à l'image (barres = une note chacune, bouton = un coup) ; chaque coupe est marquée (changement d'accord + frappe) ; la musique tape dès le 2e plan ; la révélation est le moment le plus fort (explosion sourde, whoosh), puis silence. Rien de pincé ni de « ding » (`ecoute.py` le vérifie)
 
 Pour une image précise : `npx remotion still DashboardFilm out/img.png --frame=245`. Corrige, puis relance. Deux ou trois passes sont normales.
 
 ### 7. Rendu final et livraison
 
 ```bash
+npm run son                                        # doit tourner SANS avertissement de repérage
 npx remotion render DashboardFilm out/film.mp4     # 1920×1080, H.264 CRF 16, BT.709 (remotion.config.ts)
 ```
 Compte ~25–35 min sur 4 cœurs pour 20 s (3 niveaux de flou + sur-échantillonnage ; le brouillon à `--scale=0.5` prend ~6 min). Pour une qualité maximale (4K), ajoute `--scale=2` (≈ 4× plus long). Livre :

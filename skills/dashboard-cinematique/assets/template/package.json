@@ -4,7 +4,11 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio",
+    "brouillon": "remotion render DashboardFilm out/brouillon.mp4 --scale=0.5 --crf=20 --x264-preset=veryfast --muted",
+    "reperage": "node scripts/reperage.mjs out/brouillon.mp4",
     "son": "node scripts/bande-son.mjs",
+    "sonorise": "node scripts/sonorise.mjs out/brouillon.mp4",
+    "controle": "node scripts/controle.mjs out/brouillon.mp4",
     "render": "remotion render DashboardFilm out/dashboard-film.mp4",
     "planche": "node scripts/planche.mjs",
     "ecoute": "python3 scripts/ecoute.py public/audio/bande-son.wav",

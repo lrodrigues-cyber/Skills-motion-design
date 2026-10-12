@@ -4,7 +4,7 @@ Le son compte autant que l'image dans ce style. Une des références le dit : «
 
 ## Les trois règles
 
-1. **Le son colle au montage.** Chaque plan contient un nombre entier de mesures, et le premier temps tombe exactement sur la coupe. L'accord change sur la coupe, un souffle inversé y mène et un coup grave la marque. Les effets plan par plan démarrent à l'image près avec l'animation qu'ils accompagnent.
+1. **Le son colle à l'image.** Chaque plan contient un nombre entier de mesures, et le premier temps tombe exactement sur la coupe : l'accord change, un souffle inversé y mène, une frappe la marque. **Chaque animation visible a son effet**, posé automatiquement à l'image près sur ce qui s'allume réellement à l'écran (`reperage.mjs`), avec une enveloppe qui suit la courbe de l'animation.
 2. **Ça sonne comme une musique de film électronique.** Sub profond, basse pulsée filtrée, nappe sombre et large, arpège grave et doux, batterie électronique feutrée. **Jamais de son pincé, de clochette ou d'arpège clair** : ils sont entendus comme une harpe, un clavecin, une musique de jeu vidéo ou une musique pour enfants (c'est ce qui faisait « cheap » dans les premières versions, voir `analyse-references.md` § Écoute automatique).
 3. **Les effets sont des effets de cinéma**, concentrés sur la révélation : grondement qui monte, whoosh, explosion sourde, battement. Aucun clic d'interface.
 
@@ -18,22 +18,45 @@ Le son compte autant que l'image dans ce style. Une des références le dit : «
 |---|---|
 | Tempo | Calé sur les coupes : un plan de 3 s = 1 mesure à 80 BPM. `bpm` fixe seulement combien de mesures tiennent dans un plan ; le tempo réel s'ajuste à la durée de chaque plan |
 | Harmonie | Pédale de tonique (sub + basse) et un accord par plan. Mineur : i add9 → VI maj7 → iv → VII → v sus (tension) → i à la révélation. Majeur : I → vi → IV → V → V sus → I |
-| Niveau | Chaque plan est mesuré et calé sur une pente douce de 3 dB (1er plan → dernier). La tension vient de l'arrangement, pas du volume |
+| Niveau | Chaque plan est mesuré et calé sur une pente douce de 3 dB (1er plan → dernier). La tension vient de l'arrangement, pas du volume. Mastering à -14,5 dBFS RMS (ça doit « taper » sur téléphone), crêtes ≤ -1 dBFS |
 
 ### Arrangement (style `pulse`, par défaut)
 
 | Plan | Ce qui joue |
 |---|---|
 | 1 | Ping de sonar sur la 1re image, sub, nappe sombre (filtre fermé), arpège en croches très feutré |
-| 2 | + grosse caisse sur les temps 1 et 3, basse pulsée en croches (filtre « échelle », elle pompe avec la caisse), arpège en doubles-croches |
-| 3 | + grosse caisse sur les 4 temps, filtres qui s'ouvrent |
-| 4 | + claquement réverbéré sur les temps 2 et 4, basse en doubles-croches, grondement qui commence à monter |
-| 5 | + roulement de claquements qui accélère vers la révélation, le grondement s'amplifie et se coupe net sur la révélation |
+| 2 | La musique « tombe » sur la coupe : grosse caisse percutante sur les 4 temps, basse pulsée saturée en croches (filtre « échelle », elle pompe avec la caisse), arpège en doubles-croches |
+| 3 | + frappe (claquement + caisse claire) sur les temps 2 et 4, charleston sombre sur les contretemps, basse en doubles-croches |
+| 4 | + grondement qui commence à monter |
+| 5 | + roulement qui accélère vers la révélation, le grondement s'amplifie et se coupe net sur la révélation |
 | Révélation | Souffle inversé → **la musique s'arrête** → explosion sourde (sub 62 → 26 Hz + souffle grave) → whoosh rapide de gauche à droite → accord de résolution très filtré qui s'éteint → deux battements graves → silence |
 
-À chaque coupe (plans 2 à 5) : souffle inversé sombre (0,6 s) qui se termine sur la coupe + coup grave discret, de plus en plus présents.
+À chaque coupe (plans 2 à 5) : souffle inversé sombre (0,6 s) qui se termine sur la coupe, coup grave et **frappe « braam »** (accord grave de scies saturées dont le filtre s'ouvre puis se referme), de plus en plus présents.
 
 Style `nappe` : pas de batterie, la basse pulsée entre au 3e plan. Plus planant, toujours calé sur les coupes.
+
+### Effets calés sur les animations (automatique)
+
+```bash
+npm run brouillon   # rendu muet en demi-résolution
+npm run reperage    # → src/film/reperage.json
+npm run son
+npm run sonorise    # → out/brouillon-son.mp4
+```
+
+`reperage.mjs` mesure, image par image, la lumière qui **apparaît** (accents néon qui s'allument, barres qui poussent, courbe qui se trace, texte qui arrive). Chaque bouffée nette et durable devient un événement : image de départ, pic, fin, force et courbe. Les fluctuations (dérive de la caméra, bouton dont la teinte tourne) sont écartées ; au plus 4 événements par plan, au moins 8 % du plus fort du film. Les 3 premières images d'un plan (la coupe et la mise au point) ne comptent pas : la coupe a déjà son accent.
+
+`bande-son.mjs` pose un effet par événement, **attaque sur l'image de départ**, enveloppe qui suit la courbe mesurée (très vite au début, puis ralentit comme l'ease-out) :
+
+| Taille | Son | Exemples du film d'exemple |
+|---|---|---|
+| grand (≥ 50 % du plus fort) | Coup sourd + accord de scies dont le filtre s'ouvre avec la lumière + souffle qui monte | Courbe tracée, barre rouge qui se remplit, dernière barre, bouton |
+| moyen (≥ 25 %) | Note de synthé (plus haute à chaque événement du plan) + petit coup + souffle | Les barres en cascade |
+| petit | Tic filtré + note brève | Liseré lumineux, avatar |
+
+Sous chaque effet, la musique se creuse brièvement (-4,5 / -3 / -1,5 dB) : on entend l'effet tomber pile sur l'image. Mesuré sur le film d'exemple : chaque attaque tombe entre 12 et 32 ms après le début de l'animation (moins d'une image), les grands effets ressortent de 4 à 8 dB au-dessus de la musique.
+
+Le repérage porte une **empreinte de l'interface et du montage** (hors son). Si l'un des deux change, `bande-son.mjs` ignore le repérage et le signale : refais brouillon + repérage.
 
 ## Réglages (`montage.json` → `musique`)
 
@@ -45,16 +68,18 @@ Style `nappe` : pas de batterie, la basse pulsée entre au 3e plan. Plus planant
 | `revelation` | `arret` (défaut) / `filtre` | La musique s'arrête net, ou son filtre se ferme en 0,35 s |
 | `queue` | `true` / `false` | Accord de résolution filtré qui s'éteint après la révélation |
 | `bpm` | 80 par défaut | Nombre de mesures par plan (160 → 2 mesures par plan de 3 s, plus dense) |
-| `volume` | 0.5–1.2 | Gain final (RMS cible -16 dBFS × volume) |
-| `reglages` | ex. `{ "basse": 1.3, "caisse": 1.2 }` | Dosage fin des couches (1 = réglage d'origine) : `sub`, `nappe`, `basse`, `arpege`, `caisse`, `claquement`, `reverb`, `sfx`, `accents`, `grondement`, `explosion`, `whoosh`, `ping`, `montee` (dB du 1er au dernier plan). Relancer `ecoute.py` après tout changement |
+| `volume` | 0.5–1.2 | Gain final (RMS cible -14,5 dBFS × volume) |
+| `reglages` | ex. `{ "animations": 0.7, "caisse": 1.4 }` | Dosage fin des couches (valeurs par défaut réglées à l'oreille) : `sub`, `nappe`, `basse`, `arpege`, `caisse`, `claquement`, `charleston`, `frappe` (coupes), `animations` (effets repérés), `reverb`, `sfx`, `accents`, `grondement`, `explosion`, `whoosh`, `ping`, `montee` (dB du 1er au dernier plan). Relancer `ecoute.py` après tout changement |
 
-## Effets par plan (`plans[i].son`)
+## Effets ajoutés à la main (`plans[i].son`, facultatif)
+
+Le repérage couvre les animations. N'ajoute un effet à la main que pour ce qu'il ne voit pas : un élément qui **traverse** l'image, une alerte qu'on veut souligner, une **musique du client** sans repérage.
 
 ```json
 "son": [
+  { "type": "whoosh",     "a": 40, "duree": 18 },
   { "type": "montee",     "a": 2,  "duree": 30 },
   { "type": "impulsions", "a": 2,  "ecart": 5, "nombre": 4 },
-  { "type": "whoosh",     "a": 40, "duree": 18 },
   { "type": "souffle",    "a": -24, "duree": 24 },
   { "type": "impact",     "a": 0 },
   { "type": "ping",       "a": 10 }
@@ -71,11 +96,11 @@ Style `nappe` : pas de batterie, la basse pulsée entre au 3e plan. Plus planant
 | `impact` | Coup grave | Un chiffre clé qui tombe. Une fois au plus |
 | `ping` | Ping de sonar | Une alerte qui s'allume |
 
-**Dosage** : 1 à 2 effets plan par plan sur tout le film, en plus de ce que le script place tout seul (ping d'ouverture, accents de coupe, révélation). Le film d'exemple n'en a que deux (`montee` sur la courbe, `impulsions` sur les barres).
+**Dosage** : 0 à 2 effets à la main sur tout le film. Le film d'exemple n'en a aucun : tout vient du repérage et des coupes.
 
 ## Vérifier le son
 
-1. **À l'écoute** dans le brouillon : chaque coupe est marquée, la courbe « monte », les barres ont chacune leur note, la révélation est le moment le plus fort, puis silence.
+1. **À l'écoute** dans `out/brouillon-son.mp4` : chaque coupe est marquée, chaque animation a son effet pile à l'image (les barres ont chacune leur note, le bouton son coup), la musique tape dès le 2e plan, la révélation est le moment le plus fort, puis silence. `bande-son.mjs` ne doit afficher aucun avertissement de repérage.
 2. **Avec l'oreille automatique** (facultatif, Python) :
    ```bash
    pip install tensorflow-cpu tf_keras soundfile scipy   # une fois (~600 Mo)

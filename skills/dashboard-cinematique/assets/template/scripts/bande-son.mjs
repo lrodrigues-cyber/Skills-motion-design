@@ -37,6 +37,21 @@ const M = JSON.parse(fs.readFileSync(fichierMontage, "utf8"));
 
 // ───────────────────────────── Chronologie (source unique : montage.json) ─────────────────────────────
 
+// Repérage des animations (scripts/reperage.mjs) : les effets se calent sur ce qui s'allume à l'image.
+let REPERAGE = null;
+{
+  const f = path.join(racine, "src/film/reperage.json");
+  if (fs.existsSync(f)) {
+    const r = JSON.parse(fs.readFileSync(f, "utf8"));
+    const { empreinteSources } = await import("./reperage.mjs");
+    if (r.empreinte === empreinteSources()) REPERAGE = r;
+    else
+      console.warn(
+        "⚠ repérage périmé (l'interface ou le montage ont changé depuis) : effets d'animation désactivés. Rends un brouillon, puis node scripts/reperage.mjs out/brouillon.mp4 et relance ce script.",
+      );
+  } else console.warn("⚠ pas de repérage (src/film/reperage.json) : rends un brouillon, puis node scripts/reperage.mjs out/brouillon.mp4 pour caler les effets sur les animations.");
+}
+
 const fps = M.fps;
 let curseur = 0;
 const plans = M.plans.map((p) => {
@@ -66,7 +81,7 @@ const mus = { bpm: 80, tonique: "E", mode: "mineur", style: "pulse", revelation:
 // montage.json (musique.reglages, ex. { "basse": 1.3 }) ou en ligne de commande (--reglages '{"arpege":0}') ;
 // relancer ensuite scripts/ecoute.py.
 const R = {
-  sub: 1, nappe: 1, basse: 1, arpege: 0.7, caisse: 1, claquement: 1,
+  sub: 1, nappe: 1, basse: 1, arpege: 0.7, caisse: 1.2, claquement: 1.2, charleston: 1, frappe: 1, animations: 1, compression: -16, limiteur: 0.85,
   arpOctave: -1, arpFiltre: 0.6, arpDecroissance: 0.3, arpResonance: 0.25, arpDensite: 1,
   montee: 3, reverb: 1, sfx: 0.85, accents: 1, grondement: 1, explosion: 1, whoosh: 1, ping: 1,
   ...(mus.reglages ?? {}),
@@ -291,15 +306,12 @@ const pose = (out, n, s, pan = 0.5) => {
 // ───────────────────────────── Grille rythmique ─────────────────────────────
 
 const FIN_MUSIQUE = T_MUSIQUE; // tout s'arrête net à la révélation
-// Grosse caisse : à partir du 2e plan, sur les temps 1 et 3, puis sur les 4 temps à partir du 3e.
+// Grosse caisse : sur les 4 temps dès le 2e plan (la musique « tombe » sur la 1re coupe).
 const coupsCaisse = [];
 if (PULSE)
   for (const s of sections) {
     if (s.k < 1) continue;
-    for (let b = 0; b < s.mesures * 4; b++) {
-      if (s.k < 2 && b % 2 === 1) continue;
-      coupsCaisse.push({ t: s.t0 + b * s.temps, v: (b % 4 === 0 ? 1 : 0.82) * (0.7 + 0.3 * intensite(s.k)) });
-    }
+    for (let b = 0; b < s.mesures * 4; b++) coupsCaisse.push({ t: s.t0 + b * s.temps, v: (b % 4 === 0 ? 1 : 0.85) * (0.75 + 0.25 * intensite(s.k)) });
   }
 // Le reste de la musique « respire » avec la grosse caisse (compression en side-chain).
 const creux = new Float32Array(N);
@@ -339,7 +351,7 @@ function bassePulsee() {
   const out = tampon();
   for (const s of sections) {
     if (PULSE ? s.k < 1 : s.k < 2) continue;
-    const pas = PULSE && s.k >= NS - 2 ? s.dc : s.dc * 2; // doubles-croches sur les 2 derniers plans
+    const pas = PULSE && s.k >= 2 ? s.dc : s.dc * 2; // doubles-croches dès le 3e plan
     const nb = Math.round(s.duree / pas);
     const racineB = 36 + pc; // pédale : la basse reste sur la tonique
     for (let i = 0; i < nb; i++) {
@@ -361,9 +373,10 @@ function bassePulsee() {
         if (p1 >= 1) p1 -= 1;
         if (p2 >= 1) p2 -= 1;
         const x = scie(p1, f / SR) * 0.6 + carre(p2, f / SR) * 0.4;
-        const fc = 140 + (380 + 900 * intensite(s.k)) * Math.exp(-tn / 0.07);
+        const fc = 160 + (500 + 1300 * intensite(s.k)) * Math.exp(-tn / 0.07);
         const env = Math.min(1, tn / 0.003) * (j < long ? 1 : Math.max(0, 1 - (j - long) / 600)) * Math.exp(-tn / 0.35);
-        const y = filtre.run(x, fc, 0.35) * env * vel * pompe(t0 + tn, 0.45) * 0.5;
+        // saturation : la basse « mord » (impact), sans devenir agressive
+        const y = sat(filtre.run(x, fc, 0.4) * 2.2, 2) * env * vel * pompe(t0 + tn, 0.5) * 0.32;
         pose(out, n0 + j, y, 0.5);
       }
     }
@@ -473,28 +486,47 @@ function arpege() {
   return out;
 }
 
-// ── Batterie électronique douce ──
+// ── Batterie électronique (percutante, mais sombre) ──
 
 function grosseCaisse(out, t0, v) {
   const n0 = Math.round(t0 * SR);
   const hp = new SVF();
-  let ph = 0;
+  let ph = 0,
+    phb = 0;
   for (let j = 0; j < 0.7 * SR; j++) {
     const tn = j / SR;
-    ph += expInterp(155, 47, tn / 0.05) / SR;
-    const corps = Math.sin(2 * Math.PI * ph) * Math.exp(-tn / 0.28);
-    const clic = hp.run(bruit(), 3000, 0.7, "hp") * Math.exp(-tn / 0.0025) * 0.25;
-    pose(out, n0 + j, sat((corps + clic) * 1.2, 1.4) * v * 0.55, 0.5);
+    ph += expInterp(170, 46, tn / 0.045) / SR;
+    phb += 1600 / SR;
+    const corps = Math.sin(2 * Math.PI * ph) * Math.exp(-tn / 0.3);
+    // attaque : clic de batte + petit bruit, c'est ce qui donne le « punch » sur téléphone
+    const clic = hp.run(bruit(), 2500, 0.7, "hp") * Math.exp(-tn / 0.003) * 0.35 + Math.sin(2 * Math.PI * phb) * Math.exp(-tn / 0.004) * 0.3;
+    pose(out, n0 + j, sat((corps + clic) * 1.6, 2) * v * 0.62, 0.5);
   }
 }
+/** Frappe sur les temps 2 et 4 : claquement en trois salves + corps de caisse claire (180 Hz). */
 function claquement(out, t0, v) {
   const n0 = Math.round(t0 * SR);
   const f = new SVF();
-  for (let j = 0; j < 0.4 * SR; j++) {
+  const g = new SVF();
+  let ph = 0;
+  for (let j = 0; j < 0.45 * SR; j++) {
     const tn = j / SR;
     const salves = [0, 0.009, 0.019].reduce((a, d) => a + (tn >= d ? Math.exp(-(tn - d) / 0.006) : 0), 0);
-    const env = salves * 0.6 + Math.exp(-tn / 0.11) * 0.5;
-    pose(out, n0 + j, f.run(bruit(), 1300, 1.1, "bp") * env * v * 0.35, 0.5);
+    const env = salves * 0.6 + Math.exp(-tn / 0.13) * 0.55;
+    ph += expInterp(210, 165, tn / 0.03) / SR;
+    const corps = Math.sin(2 * Math.PI * ph) * Math.exp(-tn / 0.07) * 0.5;
+    const grain = g.run(bruit(), 4200, 0.8, "bp") * Math.exp(-tn / 0.09) * 0.25;
+    pose(out, n0 + j, (f.run(bruit(), 1400, 1.0, "bp") * env + corps + grain) * v * 0.42, 0.5);
+  }
+}
+/** Charleston fermé, sombre (passe-bande à 7 kHz), sur les contretemps. */
+function charleston(out, t0, v) {
+  const n0 = Math.round(t0 * SR);
+  const f = [new SVF(), new SVF()];
+  for (let j = 0; j < 0.12 * SR; j++) {
+    const tn = j / SR;
+    const x = f[1].run(f[0].run(bruit(), 5000, 0.7, "hp"), 7000, 1.2, "bp");
+    pose(out, n0 + j, x * Math.exp(-tn / 0.025) * v * 0.12, 0.62);
   }
 }
 function batterie() {
@@ -507,8 +539,9 @@ function batterie() {
     for (let i = 0; i < nb; i++) {
       const t = s.t0 + i * s.dc;
       if (t >= FIN_MUSIQUE) break;
-      // claquement sur les temps 2 et 4 dès le 4e plan
-      if (s.k >= 3 && i % 8 === 4) claquement(mouille, t, 0.8 * intensite(s.k) * R.claquement);
+      // frappe sur les temps 2 et 4 dès le 3e plan ; charleston sur les contretemps dès le 3e plan
+      if (s.k >= 2 && i % 8 === 4) claquement(mouille, t, 0.85 * intensite(s.k) * R.claquement);
+      if (s.k >= 2 && i % 4 === 2) charleston(sec, t, (0.6 + 0.4 * intensite(s.k)) * R.charleston);
     }
     // dernier plan : roulement qui accélère vers la révélation (tension de bande-annonce)
     if (s.k === NS - 1 && NS >= 3) {
@@ -607,6 +640,35 @@ function souffleInverse(out, tFin, duree, force = 1, k = 0) {
     const env = Math.pow(i / nd, 1.6);
     out[0][n] += r[0][src] * env * 1.6 * force;
     out[1][n] += r[1][src] * env * 1.6 * force;
+  }
+}
+
+/** Frappe de coupe (« braam » de bande-annonce) : accord grave de scies saturées dont le filtre s'ouvre puis se referme. */
+function frappe(out, t0, k, force = 1) {
+  const n0 = Math.round(t0 * SR);
+  const acc = accordDe(k);
+  const notes = [acc.basse, acc.basse + 7, acc.basse + 12, acc.voix[2]].map((iv) => hz(40 + pc + iv));
+  const osc = notes.flatMap((f) => [-9, 0, 9].map((c) => ({ f: f * Math.pow(2, c / 1200), ph: alea() })));
+  const lp = [new Echelle(), new Echelle()];
+  for (let j = 0; j < 1.4 * SR && n0 + j < N; j++) {
+    const tn = j / SR;
+    let l = 0,
+      r = 0;
+    osc.forEach((o, i) => {
+      o.ph += o.f / SR;
+      if (o.ph >= 1) o.ph -= 1;
+      const x = scie(o.ph, o.f / SR);
+      if (i % 3 === 0) l += x;
+      else if (i % 3 === 2) r += x;
+      else {
+        l += x * 0.7;
+        r += x * 0.7;
+      }
+    });
+    const fc = 220 + 1500 * Math.exp(-tn / 0.18) * Math.min(1, tn / 0.015);
+    const env = Math.min(1, tn / 0.006) * Math.exp(-tn / 0.5);
+    out[0][n0 + j] += sat(lp[0].run(l * 0.18, fc, 0.3) * 2, 1.6) * env * force * 0.32;
+    out[1][n0 + j] += sat(lp[1].run(r * 0.18, fc, 0.3) * 2, 1.6) * env * force * 0.32;
   }
 }
 
@@ -735,6 +797,109 @@ function impulsions(out, t0, duree, k, ecart = null, nombre = 5) {
   }
 }
 
+// ── Effets calés sur les animations repérées ──
+
+/** Coup sourd (attaque d'un événement) : sinus qui tombe très vite. */
+function coupSourd(out, t0, f0, f1, decroissance, g, pan = 0.5) {
+  const n0 = Math.round(t0 * SR);
+  let ph = 0;
+  for (let j = 0; j < decroissance * 6 * SR; j++) {
+    const tn = j / SR;
+    ph += expInterp(f0, f1, tn / (decroissance * 0.6)) / SR;
+    pose(out, n0 + j, sat(Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.002) * Math.exp(-tn / decroissance) * 1.3, 1.4) * g, pan);
+  }
+}
+
+/**
+ * Un effet par événement repéré. L'attaque tombe sur l'image où la lumière commence à monter,
+ * et l'enveloppe du son SUIT la courbe mesurée (vite au début, puis ralentit, comme l'ease-out).
+ */
+function sonAnimation(out, envoiOut, e, k, rang) {
+  const plan = plans.find((p) => p.id === e.plan);
+  if (!plan) return;
+  const t0 = (plan.debut + e.image) / fps;
+  const c = e.courbe;
+  const m = Math.max(...c) || 1;
+  const nbImg = c.length;
+  const tail = e.taille === "grand" ? 0.45 : e.taille === "moyen" ? 0.22 : 0.08;
+  // E(t) : lumière qui apparaît, normalisée (1 au pic), puis queue qui retombe
+  const E = (tn) => {
+    const x = tn * fps;
+    if (x < 0) return 0;
+    if (x >= nbImg - 1) return (c[nbImg - 1] / m) * Math.exp(-(tn - (nbImg - 1) / fps) / tail);
+    const i = Math.floor(x);
+    return (c[i] * (1 - (x - i)) + c[i + 1] * (x - i)) / m;
+  };
+  // progression cumulée 0 → 1 (pour la hauteur du souffle)
+  const cumul = [0];
+  for (let i = 0; i < nbImg; i++) cumul.push(cumul[i] + c[i]);
+  const P = (tn) => borne(cumul[Math.min(nbImg, Math.max(0, Math.floor(tn * fps)))] / cumul[nbImg]);
+  const acc = accordDe(k).voix;
+  const pan = 0.5 + 0.25 * Math.sin(rang * 1.7 + k);
+  const g = R.animations * (e.taille === "grand" ? 1.9 : e.taille === "moyen" ? 1.7 : 1.1);
+  const n0 = Math.round(t0 * SR);
+  const long = Math.round(((nbImg - 1) / fps + tail * 5) * SR);
+
+  if (e.taille === "grand") {
+    coupSourd(out, t0, 120, 48, 0.2, 0.42 * g, pan);
+    const osc = acc.slice(0, 3).flatMap((iv) => [-7, 7].map((ct) => ({ f: hz(48 + pc + iv) * Math.pow(2, ct / 1200), ph: alea() })));
+    const lp = new Echelle();
+    const bp = new SVF();
+    for (let j = 0; j < long && n0 + j < N; j++) {
+      const tn = j / SR;
+      const e1 = E(tn);
+      let x = 0;
+      for (const o of osc) {
+        o.ph += o.f / SR;
+        if (o.ph >= 1) o.ph -= 1;
+        x += scie(o.ph, o.f / SR);
+      }
+      const ton = lp.run(x * 0.2, 250 + 3200 * e1, 0.3) * (0.25 + 0.75 * e1) * Math.min(1, tn / 0.004);
+      const souffle = bp.run(bruit(), 700 * (1 + 4 * P(tn)), 1.4, "bp") * e1 * 0.5;
+      const y = (ton * 0.55 + souffle) * g * 0.5;
+      pose(out, n0 + j, y, pan);
+      pose(envoiOut, n0 + j, y * 0.35, pan);
+    }
+  } else if (e.taille === "moyen") {
+    coupSourd(out, t0, 150, 70, 0.08, 0.25 * g, pan);
+    const note = 48 + pc + acc[rang % acc.length] + 12 * Math.floor(rang / acc.length);
+    const f = hz(note);
+    const lp = new Echelle();
+    const bp = new SVF();
+    let p1 = alea(),
+      p2 = alea();
+    for (let j = 0; j < long && n0 + j < N; j++) {
+      const tn = j / SR;
+      const e1 = E(tn);
+      p1 += (f * 1.003) / SR;
+      p2 += (f * 0.997) / SR;
+      if (p1 >= 1) p1 -= 1;
+      if (p2 >= 1) p2 -= 1;
+      const x = scie(p1, f / SR) * 0.6 + carre(p2, f / SR) * 0.4;
+      const ton = lp.run(x, 300 + 2600 * e1, 0.35) * (0.35 + 0.65 * e1) * Math.min(1, tn / 0.003) * Math.exp(-tn / (tail * 2.5));
+      const swish = bp.run(bruit(), 2500, 1.2, "bp") * e1 * 0.25;
+      const y = (ton * 0.4 + swish) * g * 0.6;
+      pose(out, n0 + j, y, pan);
+      pose(envoiOut, n0 + j, y * 0.3, pan);
+    }
+  } else {
+    const hp = new SVF();
+    const lp = new Echelle();
+    const f = hz(72 + pc + acc[rang % acc.length]);
+    let ph = alea();
+    for (let j = 0; j < 0.25 * SR && n0 + j < N; j++) {
+      const tn = j / SR;
+      ph += f / SR;
+      if (ph >= 1) ph -= 1;
+      const tic = hp.run(bruit(), 2200, 0.7, "hp") * Math.exp(-tn / 0.012) * 0.5;
+      const blip = lp.run(scie(ph, f / SR), 2200, 0.2) * Math.exp(-tn / 0.09) * 0.25;
+      const y = (tic + blip) * g * 0.45;
+      pose(out, n0 + j, y, pan);
+      pose(envoiOut, n0 + j, y * 0.4, pan);
+    }
+  }
+}
+
 // ───────────────────────────── Assemblage ─────────────────────────────
 
 console.log(
@@ -772,7 +937,11 @@ for (const s of sections) {
   if (s.k === 0) continue;
   const f = 0.45 + 0.5 * intensite(s.k);
   souffleInverse(sfx, s.t0, Math.min(0.6, s.duree * 0.2), 0.35 * f * R.accents, s.k);
-  coupGrave(sfx, s.t0, 0.6 * f * R.accents);
+  coupGrave(sfx, s.t0, 0.7 * f * R.accents);
+  if (!SFX_SEULS) {
+    frappe(musique, s.t0, s.k, f * R.frappe);
+    frappe(envoi, s.t0, s.k, 0.3 * f * R.frappe);
+  }
 }
 if (T_REV !== null) {
   grondement(sfx, Math.max(0, (sections[Math.max(0, NS - 2)]?.t0 ?? 0) + 0.2), T_REV, R.grondement);
@@ -806,7 +975,31 @@ if (T_REV !== null) {
     ajoute(envoiSfx, qc, 0.8);
   }
 }
-// effets demandés plan par plan dans le montage
+// effets calés sur les animations repérées à l'image ; la musique se creuse un instant sous chacun
+// (comme au mixage d'un film) pour qu'on entende l'effet tomber pile sur l'image.
+if (REPERAGE) {
+  const creuxMusique = new Float32Array(N).fill(1);
+  for (const p of plans) {
+    const k = plans.indexOf(p);
+    REPERAGE.evenements.filter((e) => e.plan === p.id).forEach((e, rang) => {
+      sonAnimation(sfx, envoiSfx, e, k, rang);
+      const prof = Math.pow(10, -(e.taille === "grand" ? 4.5 : e.taille === "moyen" ? 3 : 1.5) / 20);
+      const t0 = (p.debut + e.image) / fps;
+      const t1 = (p.debut + e.fin) / fps + 0.12;
+      for (let n = Math.max(0, Math.round((t0 - 0.03) * SR)); n < Math.min(N, Math.round((t1 + 0.4) * SR)); n++) {
+        const t = n / SR;
+        const a = fondu(t, t0 - 0.03, 0.03) * (1 - fondu(t, t1, 0.4));
+        creuxMusique[n] = Math.min(creuxMusique[n], 1 - (1 - prof) * a);
+      }
+    });
+  }
+  if (!SFX_SEULS)
+    for (let n = 0; n < N; n++) {
+      musique[0][n] *= creuxMusique[n];
+      musique[1][n] *= creuxMusique[n];
+    }
+}
+// effets demandés plan par plan dans le montage (en plus)
 for (const p of plans) {
   const k = plans.indexOf(p);
   for (const e of p.son ?? []) {
@@ -855,8 +1048,20 @@ if (T_REV !== null && !SFX_SEULS) {
   }
 }
 
-// 5. mastering : compression douce de bus, niveau (RMS -16 dBFS sur la partie musicale),
+// 5. mastering : compression de bus, niveau (RMS -14,5 dBFS sur la partie musicale : ça doit « taper »),
 //    aigus adoucis sans étouffer, limiteur (crêtes ≤ -1 dBFS).
+// (diagnostic) PISTES=dossier : écrit aussi la musique et les effets séparément, avant mastering
+if (process.env.PISTES) {
+  const ecrit = (nom, buf, g) => {
+    const b = Buffer.alloc(44 + N * 4);
+    b.write("RIFF", 0); b.writeUInt32LE(36 + N * 4, 4); b.write("WAVEfmt ", 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(2, 22);
+    b.writeUInt32LE(SR, 24); b.writeUInt32LE(SR * 4, 28); b.writeUInt16LE(4, 32); b.writeUInt16LE(16, 34); b.write("data", 36); b.writeUInt32LE(N * 4, 40);
+    for (let n = 0; n < N; n++) for (let c = 0; c < 2; c++) b.writeInt16LE(Math.round(borne(buf[c][n] * g, -1, 1) * 32767), 44 + n * 4 + c * 2);
+    fs.writeFileSync(path.join(process.env.PISTES, nom), b);
+  };
+  ecrit("musique.wav", musique, 0.25);
+  ecrit("effets.wav", sfx, 0.25 * R.sfx);
+}
 const mix = tampon();
 ajoute(mix, musique, 1);
 ajoute(mix, sfx, SFX_SEULS ? 1 : R.sfx);
@@ -866,26 +1071,26 @@ const rms = (x) => {
   for (let n = 0; n < nMus; n++) s += (x[0][n] ** 2 + x[1][n] ** 2) / 2;
   return Math.sqrt(s / nMus) || 1e-9;
 };
-const gainEntree = Math.pow(10, -16 / 20) / rms(mix);
-// compresseur de bus (2:1 au-dessus de -20 dBFS, attaque 15 ms, relâche 180 ms) : colle les couches ensemble
+const gainEntree = Math.pow(10, -14.5 / 20) / rms(mix);
+// compresseur de bus (2:1 au-dessus de -16 dBFS, attaque 10 ms, relâche 150 ms) : colle les couches ensemble
 {
-  const seuil = Math.pow(10, -14 / 20);
-  const att = Math.exp(-1 / (0.015 * SR));
-  const rel = Math.exp(-1 / (0.18 * SR));
+  const seuil = Math.pow(10, R.compression / 20);
+  const att = Math.exp(-1 / (0.025 * SR)); // attaque lente : les transitoires passent (punch)
+  const rel = Math.exp(-1 / (0.15 * SR));
   let envC = 0;
   for (let n = 0; n < N; n++) {
     const l = mix[0][n] * gainEntree;
     const r = mix[1][n] * gainEntree;
     const niveau = Math.max(Math.abs(l), Math.abs(r));
     envC = niveau > envC ? att * envC + (1 - att) * niveau : rel * envC + (1 - rel) * niveau;
-    const g = envC > seuil ? Math.pow(envC / seuil, 1 / 1.6 - 1) : 1;
+    const g = envC > seuil ? Math.pow(envC / seuil, 1 / 2 - 1) : 1;
     mix[0][n] = l * g;
     mix[1][n] = r * g;
   }
 }
-const gainSortie = (SFX_SEULS ? Math.pow(10, -18 / 20) : Math.pow(10, -16 / 20)) / rms(mix) * mus.volume;
+const gainSortie = (SFX_SEULS ? Math.pow(10, -18 / 20) : Math.pow(10, -14.5 / 20)) / rms(mix) * mus.volume;
 const PLAFOND = Math.pow(10, -1 / 20);
-const SEUIL = PLAFOND * 0.7;
+const SEUIL = PLAFOND * R.limiteur;
 const limite = (x) => {
   const a = Math.abs(x);
   return a <= SEUIL ? x : Math.sign(x) * (SEUIL + (PLAFOND - SEUIL) * Math.tanh((a - SEUIL) / (PLAFOND - SEUIL)));

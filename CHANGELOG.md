@@ -2,6 +2,25 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.2.0 (12 octobre 2026)
+
+Effets sonores calés sur les animations et musique plus percutante.
+
+**Effets calés à l'image**
+- Nouveau `scripts/reperage.mjs` : lit le brouillon image par image et repère tout ce qui s'allume (courbe tracée, barre qui pousse, bouton qui apparaît). Écarte la dérive de la caméra et les teintes qui tournent.
+- La bande-son pose un effet par événement repéré, attaque sur la première image de l'animation, enveloppe qui suit sa courbe mesurée. Trois tailles : coup sourd + accord qui s'ouvre (grand), note qui monte d'une barre à l'autre (moyen), tic (petit).
+- La musique se creuse sous chaque effet (-4,5 à -1,5 dB) : on entend l'effet tomber pile sur l'image.
+- Le repérage porte une empreinte de l'interface et du montage : un repérage périmé est ignoré et signalé.
+- Cause corrigée : les animations sont très rapides (courbe tracée en 6 images) alors que l'ancienne « montée » durait 30 images, et les effets étaient 4 à 26 dB sous la musique. Mesuré désormais : attaques à moins d'une image, grands effets 4 à 8 dB au-dessus de la musique.
+
+**Musique plus percutante**
+- Grosse caisse sur les 4 temps dès le 2e plan, attaque plus marquée ; frappe (claquement + caisse claire) et charleston dès le 3e plan.
+- Basse saturée, en doubles-croches dès le 3e plan.
+- Frappe « braam » sur chaque coupe, en plus du coup grave.
+- Mastering plus fort (-14,5 dBFS RMS) ; similarité aux références 0,834 (seuil 0,80).
+
+**Outils** : `scripts/sonorise.mjs` (pose la bande-son sur un brouillon sans refaire le rendu) ; scripts npm `brouillon`, `reperage`, `sonorise`, `controle`.
+
 ## dashboard-cinematique 1.1.0 (12 octobre 2026)
 
 Bande-son entièrement refaite. La version 1.0 respectait les mesures des références (spectre, niveaux, accords) mais sonnait « cheap » : un modèle d'écoute (YAMNet) l'entendait comme une harpe, un clavecin, une musique de jeu vidéo, et la révélation comme un « ding » de musique pour enfants.
