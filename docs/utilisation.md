@@ -77,14 +77,16 @@ Le film suit toujours la même architecture, relevée sur les vidéos de référ
 
 | Temps | Plan | Ce qu'on voit | Son |
 |---|---|---|---|
-| 0 – 3 s | 1. Ouverture | En-tête et carte KPI, liseré lumineux sous la carte | Nappe et basse profonde, motif rythmique discret |
-| 3 – 6 s | 2. Graphique | Une courbe qui se trace point par point | Entrée de la grosse caisse douce, montée tonale |
-| 6 – 9 s | 3. Alerte | Un grand chiffre en rouge et sa barre lumineuse | L'arrangement s'épaissit |
-| 9 – 12 s | 4. Deuxième graphique | Des barres qui poussent en cascade, couleurs opposées | Scintillement, arpège qui monte avec les barres |
-| 12 – 15 s | 5. Action | La barre du haut et le bouton principal | Souffle qui gonfle jusqu'à la coupe |
-| 15 – 19 s | Révélation | Recul sur le tableau de bord entier, qui respire puis s'éteint | La musique s'arrête net, impact grave, traîne, silence |
+| 0 – 3 s | 1. Ouverture | En-tête et carte KPI, liseré lumineux sous la carte | Ping de sonar, nappe sombre et basse profonde, arpège feutré |
+| 3 – 6 s | 2. Graphique | Une courbe qui se trace point par point | Coup grave sur la coupe, entrée de la grosse caisse et de la basse pulsée, montée qui suit le tracé |
+| 6 – 9 s | 3. Alerte | Un grand chiffre en rouge et sa barre lumineuse | Nouvel accord, grosse caisse sur chaque temps |
+| 9 – 12 s | 4. Deuxième graphique | Des barres qui poussent en cascade, couleurs opposées | Une note grave par barre, au moment où elle pousse ; claquements |
+| 12 – 15 s | 5. Action | La barre du haut et le bouton principal | Grondement qui monte, roulement qui accélère |
+| 15 – 19 s | Révélation | Recul sur le tableau de bord entier, qui respire puis s'éteint | La musique s'arrête net : explosion sourde, whoosh, deux battements, silence |
 
 Chaque plan est une **coupe franche** : pas de fondu ni de passage par le noir. Le nouveau plan arrive déjà visible, légèrement flou, et devient net en 0,4 s. La caméra glisse en continu pendant tout le film.
+
+La musique est **calée sur le montage** : chaque plan dure exactement une mesure, et chaque coupe tombe sur un temps fort, avec un changement d'accord et un coup grave. Si la durée d'un plan change, le tempo s'ajuste tout seul.
 
 ## 5. Ce que vous pouvez régler
 
@@ -107,12 +109,12 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 | Réglage | Valeurs possibles | Par défaut |
 |---|---|---|
 | Musique | Générée, ou la vôtre (le skill produit alors les effets sonores seuls) | Générée |
-| Tempo | 82 à 100 BPM | 92 |
 | Tonalité | Do, ré, mi, fa, sol, la, si, avec ou sans altération | Mi |
 | Mode | Mineur (sombre, tendu) ou majeur (plus lumineux) | Mineur |
-| Style | `pulse` (motif rythmique rapide et grosse caisse douce) ou `nappe` (nappe qui respire, plus planante) | `pulse` |
+| Style | `pulse` (basse pulsée et batterie électronique feutrée) ou `nappe` (sans batterie, plus planant) | `pulse` |
 | Révélation | Arrêt net, comme un arrêt de bande, ou filtre qui se ferme | Arrêt net |
-| Effets sonores | Montée tonale, arpège, souffle, impact, sur le plan de votre choix | 3 effets, plus la révélation |
+| Effets sonores | Montée (courbe qui se trace), une note par barre (barres qui poussent), whoosh, coup grave, ping, calés sur l'animation de votre choix | Ping d'ouverture, accent sur chaque coupe, montée, notes des barres, révélation |
+| Dosage des couches | Basse, batterie, nappe, arpège, réverbération, effets : plus ou moins présents | Réglé à l'oreille sur les références |
 | Version « effets sonores seuls » | Pour TikTok et Reels, où l'on ajoute un son tendance | Proposée à la livraison |
 
 ## 6. Ce qui fait le style (à ne pas changer)
@@ -124,7 +126,7 @@ Ces règles ont été mesurées sur les vidéos de référence. Si vous les cont
 - **Une caméra qui ne s'arrête jamais.** Chaque coupe se fait en mouvement : c'est ce qui rend le montage fluide.
 - **Jamais de passage par le noir entre deux plans.** Un fondu au noir toutes les 3 s donne une impression de clignotement.
 - **La lumière vient uniquement des accents.** Pas de faisceaux, de rayons ni d'effets de lumière ajoutés : ils font artificiel.
-- **Un son sombre et musical.** Pas de clics d'interface ni de « whoosh » à chaque coupe. Ce sont les couches de la musique qui marquent les transitions.
+- **Un son de film, calé sur l'image.** Chaque coupe tombe sur un temps fort. Pas de clics d'interface, pas de son pincé ni de clochette : ils font « jeu vidéo ». Les effets spectaculaires (explosion, whoosh) sont réservés à la révélation.
 
 ## 7. Bonnes pratiques
 
@@ -149,6 +151,7 @@ Le projet livré est un projet [Remotion](https://www.remotion.dev) standard. De
 | `npm run render` | Rend le film final dans `out/dashboard-film.mp4` |
 | `node scripts/planche.mjs out/film.mp4` | Crée une planche-contact (`out/planche.png`) pour vérifier le film d'un coup d'œil |
 | `node scripts/controle.mjs out/film.mp4` | Contrôle la fluidité : images ratées, plongées au noir, plans figés |
+| `npm run ecoute` | Contrôle le son avec une oreille automatique : ressemblance aux références, sons lus de travers. Facultatif : demande Python et `pip install tensorflow-cpu tf_keras soundfile scipy` |
 
 Les fichiers à connaître :
 

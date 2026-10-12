@@ -165,9 +165,18 @@ Le fichier `public/audio/bande-son.wav` est généré à la création du projet,
 </details>
 
 <details>
+<summary><b>Le son fait « cheap », « jeu vidéo » ou ne colle pas à l'image</b></summary>
+
+La version 1.1 du skill a été refaite pour ça : musique calée sur les coupes, palette de musique de film, aucun son pincé ni clochette. Si une retouche a dégradé le son, demandez : *« Passe l'écoute automatique sur la bande-son et corrige ce qu'elle signale. »*
+
+Le script `scripts/ecoute.py` compare la piste aux vidéos de référence avec un modèle d'écoute (YAMNet) et signale les sons lus comme une harpe, un clavecin, une musique de jeu vidéo ou un « ding ». Il demande Python et `pip install tensorflow-cpu tf_keras soundfile scipy` (environ 600 Mo, une seule fois).
+
+</details>
+
+<details>
 <summary><b>La musique ne me plaît pas</b></summary>
 
-Tout est réglable en une phrase : tempo, tonalité, mode majeur ou mineur, style `pulse` ou `nappe`, type de révélation, effets sonores, volume. Les formulations sont dans les [prompts de retouche](prompts.md#7-retouches). Vous pouvez aussi fournir votre propre musique ([modèle 6](prompts.md#6-avec-votre-propre-musique)).
+Tout est réglable en une phrase : tonalité, mode majeur ou mineur, style `pulse` ou `nappe`, type de révélation, effets sonores, dosage des couches (basse, batterie, nappe…), volume. Les formulations sont dans les [prompts de retouche](prompts.md#7-retouches). Vous pouvez aussi fournir votre propre musique ([modèle 6](prompts.md#6-avec-votre-propre-musique)).
 
 </details>
 

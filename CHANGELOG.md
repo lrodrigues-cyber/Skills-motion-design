@@ -2,6 +2,24 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.1.0 (12 octobre 2026)
+
+Bande-son entièrement refaite. La version 1.0 respectait les mesures des références (spectre, niveaux, accords) mais sonnait « cheap » : un modèle d'écoute (YAMNet) l'entendait comme une harpe, un clavecin, une musique de jeu vidéo, et la révélation comme un « ding » de musique pour enfants.
+
+**Son**
+- Nouveau moteur audio : oscillateurs sans repliement, filtre « échelle » de synthé analogique, réverbération de salle (réseau de 8 lignes), compression de bus.
+- La musique est calée sur le montage : chaque plan est une mesure dont le premier temps tombe sur la coupe, l'accord change sur la coupe (pédale de tonique, i – VI – iv – VII – v sus → i).
+- Palette de musique de film électronique : sub, basse pulsée filtrée, nappe sombre avec texture de chœur, arpège grave et doux, grosse caisse et claquements feutrés. Plus aucun son pincé ni clochette.
+- Effets de cinéma placés automatiquement : ping de sonar à l'ouverture, souffle inversé et coup grave sur chaque coupe, grondement qui monte jusqu'à la révélation, explosion sourde, whoosh, battements.
+- Effets plan par plan calés sur l'animation : `montee` (courbe), `impulsions` (une note par barre, `ecart` et `nombre`), `whoosh`, `impact`, `ping`.
+- Volume presque constant d'un plan à l'autre (+3 dB du premier au dernier), comme les références : le premier plan n'est plus trop faible.
+- Dosage des couches réglable dans `montage.json` (`musique.reglages`).
+
+**Outils**
+- `scripts/ecoute.py` (facultatif, Python) : compare la bande-son aux références avec YAMNet et signale les sons lus de travers. Nouvelle bande-son 0,875 de similarité, ancienne 0,69, références entre elles 0,65–0,85.
+
+**Compatibilité** : les montages 1.0 restent valides. `arpege` est lu comme `impulsions`, et `bpm` fixe désormais le nombre de mesures par plan (le tempo réel suit les coupes).
+
 ## dashboard-cinematique 1.0.0 (12 octobre 2026)
 
 Première version publique.

@@ -7,6 +7,7 @@
     "son": "node scripts/bande-son.mjs",
     "render": "remotion render DashboardFilm out/dashboard-film.mp4",
     "planche": "node scripts/planche.mjs",
+    "ecoute": "python3 scripts/ecoute.py public/audio/bande-son.wav",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

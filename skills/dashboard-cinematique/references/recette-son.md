@@ -1,91 +1,96 @@
 # Recette son
 
-Le son compte autant que l'image dans ce style. Une des références le dit : « Motion makes it feel alive. Sound makes it feel expensive. » Ce fichier explique ce qu'on a mesuré sur les 5 références, comment `scripts/bande-son.mjs` le reproduit, et comment le régler.
+Le son compte autant que l'image dans ce style. Une des références le dit : « Motion makes it feel alive. Sound makes it feel expensive. » Ce fichier explique ce que les références font, comment `scripts/bande-son.mjs` le reproduit, comment le régler et comment le vérifier.
 
-## Ce que les mesures ont montré
+## Les trois règles
 
-Les mesures portent sur la partie musicale, avant la révélation.
+1. **Le son colle au montage.** Chaque plan contient un nombre entier de mesures, et le premier temps tombe exactement sur la coupe. L'accord change sur la coupe, un souffle inversé y mène et un coup grave la marque. Les effets plan par plan démarrent à l'image près avec l'animation qu'ils accompagnent.
+2. **Ça sonne comme une musique de film électronique.** Sub profond, basse pulsée filtrée, nappe sombre et large, arpège grave et doux, batterie électronique feutrée. **Jamais de son pincé, de clochette ou d'arpège clair** : ils sont entendus comme une harpe, un clavecin, une musique de jeu vidéo ou une musique pour enfants (c'est ce qui faisait « cheap » dans les premières versions, voir `analyse-references.md` § Écoute automatique).
+3. **Les effets sont des effets de cinéma**, concentrés sur la révélation : grondement qui monte, whoosh, explosion sourde, battement. Aucun clic d'interface.
 
-| Mesure | Références (V1–V5) | Ce que ça veut dire |
-|---|---|---|
-| Harmonie (accord détecté chaque seconde) | V1 fa mineur presque tout du long ; V2 do mineur ; V3 ré♭/fa mineur ; V4 la tout du long ; V5 fa/ré mineur puis ré | **Un seul accord** (bourdon). Les couleurs changent par-dessus, jamais de grille de 4 accords |
-| Spectre (octaves, dB relatifs) | 31 Hz : -5 à -17 · 63 Hz : -2 à -11 · 125 Hz : -3 à -12 · 1 kHz : -13 à -31 · 8 kHz : -35 à -58 · 16 kHz : -53 à -82 | **Sub très profond**, médiums chauds, **aucun aigu brillant** |
-| Stéréo | côtés/centre -4 à -16 dB, corrélation G/D 0,47–0,95 (médiane ~0,75) | Large, sauf V4 presque mono |
-| Attaques (percussif / harmonique) | -10,8 à -14,5 dB | Pulsation présente mais douce |
-| Rythme des attaques | V4 toutes les 0,163 s (doubles-croches à 92 BPM) ; V2 0,232 s ; V5 ~0,35–0,5 s (grosse caisse douce) ; V1 rares | Motif répétitif rapide ou nappe qui respire |
-| Aux coupes | Pas d'attaque ni de saut de niveau systématique | **Aucun bruit de transition** sur les coupes |
-| Niveau | RMS -15 à -25 dBFS, crête/RMS 9–16 dB | Musique devant, sans écrasement |
-| Révélation | V3 : +4 dB au recul (moment le plus fort) puis chute ; V4 : arrêt de bande ; V2 : filtre fermé d'un coup | La musique s'arrête net au moment clé |
+## Ce que le script produit
 
-Notre bande-son d'exemple, mesurée de la même façon :
-- spectre 31 Hz -4 · 63 Hz -6 · 125 Hz -11 · 1 kHz -16 · 8 kHz -42 · 16 kHz -62 ;
-- corrélation G/D 0,86 ;
-- attaques -8,7 dB ;
-- RMS -18 dBFS, crête -4 dBFS.
+**Une seule source de vérité : `src/film/montage.json`.** Le script lit les plans, leurs effets (`son`) et la fin. Dès qu'on change le montage, on relance `node scripts/bande-son.mjs` (≈ 5 s). La musique est **originale** et synthétisée par le script (on ne copie pas la musique des références, on reproduit leur grammaire). Le résultat est déterministe : même montage + même `--graine` = même fichier.
 
-Toutes ces valeurs sont dans la fourchette des références.
+### Grille
 
-## Comment c'est construit
-
-**Une seule source de vérité : `src/film/montage.json`.** Le script lit les plans, leurs effets (`son`) et la fin, puis calcule tout en secondes. Dès qu'on change le montage, on relance `node scripts/bande-son.mjs` (≈ 2 s).
-
-La musique est **originale** et synthétisée par le script. On ne copie pas la musique des références, qui appartient à ses auteurs : on reproduit leur grammaire. Le résultat est déterministe : même montage + même `--graine` = même fichier.
-
-### L'arrangement monte plan après plan (style `pulse`)
-
-| Moment | Ce qui entre |
+| Élément | Règle |
 |---|---|
-| Plan 1 | Sub sur la tonique (octave 1, 33–62 Hz, légèrement saturé pour les téléphones) + nappe large (5 scies désaccordées par note, filtrée, chorus) + motif en doubles-croches discret |
-| Plan 2 | Le motif devient présent ; grosse caisse douce sur les temps (elle « pompe » la nappe et le sub) |
-| Plan 4 | Scintillement : le motif une octave plus haut, une note sur deux, avec écho ping-pong |
-| Tout du long | Le filtre s'ouvre (nappe 420 Hz → 2,3 kHz, motif 650 Hz → 4,2 kHz) ; la couleur d'accord alterne toutes les 2 mesures (i add9 ↔ VI maj7) au-dessus du bourdon |
-| Révélation | Souffle inversé (réverbération d'un accord jouée à l'envers, 0,9 s) → la musique **s'arrête** (arrêt de bande ou filtre) → impact grave (62 → 31 Hz) → traîne de nappe filtrée qui s'éteint → silence |
+| Tempo | Calé sur les coupes : un plan de 3 s = 1 mesure à 80 BPM. `bpm` fixe seulement combien de mesures tiennent dans un plan ; le tempo réel s'ajuste à la durée de chaque plan |
+| Harmonie | Pédale de tonique (sub + basse) et un accord par plan. Mineur : i add9 → VI maj7 → iv → VII → v sus (tension) → i à la révélation. Majeur : I → vi → IV → V → V sus → I |
+| Niveau | Chaque plan est mesuré et calé sur une pente douce de 3 dB (1er plan → dernier). La tension vient de l'arrangement, pas du volume |
 
-Style `nappe` (V1, V2) : pas de grosse caisse. La nappe respire en croches dès le plan 2, et le motif entre au plan 3, deux fois moins dense.
+### Arrangement (style `pulse`, par défaut)
+
+| Plan | Ce qui joue |
+|---|---|
+| 1 | Ping de sonar sur la 1re image, sub, nappe sombre (filtre fermé), arpège en croches très feutré |
+| 2 | + grosse caisse sur les temps 1 et 3, basse pulsée en croches (filtre « échelle », elle pompe avec la caisse), arpège en doubles-croches |
+| 3 | + grosse caisse sur les 4 temps, filtres qui s'ouvrent |
+| 4 | + claquement réverbéré sur les temps 2 et 4, basse en doubles-croches, grondement qui commence à monter |
+| 5 | + roulement de claquements qui accélère vers la révélation, le grondement s'amplifie et se coupe net sur la révélation |
+| Révélation | Souffle inversé → **la musique s'arrête** → explosion sourde (sub 62 → 26 Hz + souffle grave) → whoosh rapide de gauche à droite → accord de résolution très filtré qui s'éteint → deux battements graves → silence |
+
+À chaque coupe (plans 2 à 5) : souffle inversé sombre (0,6 s) qui se termine sur la coupe + coup grave discret, de plus en plus présents.
+
+Style `nappe` : pas de batterie, la basse pulsée entre au 3e plan. Plus planant, toujours calé sur les coupes.
 
 ## Réglages (`montage.json` → `musique`)
 
 | Clé | Valeurs | Effet |
 |---|---|---|
-| `bpm` | 82–100 (92 par défaut) | Tempo. Doubles-croches = 60/bpm/4 s |
 | `tonique` | `C`…`B`, `F#`, `Bb`… | Tonalité (références : F, C, D♭/A♭, A, E) |
 | `mode` | `mineur` (défaut) / `majeur` | Couleur. Mineur = toutes les références |
-| `style` | `pulse` (défaut, V4/V5) / `nappe` (V1/V2) | Motif rapide + grosse caisse douce, ou nappe qui respire |
-| `revelation` | `arret` (défaut) / `filtre` | Arrêt de bande (V4) ou filtre qui se ferme (V2) |
-| `queue` | `true` / `false` | Traîne de nappe filtrée après la révélation (V1, V3) |
-| `volume` | 0.5–1.2 | Gain final (RMS cible -18 dBFS × volume) |
+| `style` | `pulse` (défaut) / `nappe` | Avec batterie électronique, ou nappe planante sans batterie |
+| `revelation` | `arret` (défaut) / `filtre` | La musique s'arrête net, ou son filtre se ferme en 0,35 s |
+| `queue` | `true` / `false` | Accord de résolution filtré qui s'éteint après la révélation |
+| `bpm` | 80 par défaut | Nombre de mesures par plan (160 → 2 mesures par plan de 3 s, plus dense) |
+| `volume` | 0.5–1.2 | Gain final (RMS cible -16 dBFS × volume) |
+| `reglages` | ex. `{ "basse": 1.3, "caisse": 1.2 }` | Dosage fin des couches (1 = réglage d'origine) : `sub`, `nappe`, `basse`, `arpege`, `caisse`, `claquement`, `reverb`, `sfx`, `accents`, `grondement`, `explosion`, `whoosh`, `ping`, `montee` (dB du 1er au dernier plan). Relancer `ecoute.py` après tout changement |
 
 ## Effets par plan (`plans[i].son`)
 
 ```json
 "son": [
-  { "type": "montee",  "a": 8,   "duree": 40 },
-  { "type": "arpege",  "a": 8,   "duree": 28 },
-  { "type": "souffle", "a": -24, "duree": 24 },
-  { "type": "impact",  "a": 0 }
+  { "type": "montee",     "a": 2,  "duree": 30 },
+  { "type": "impulsions", "a": 2,  "ecart": 5, "nombre": 4 },
+  { "type": "whoosh",     "a": 40, "duree": 18 },
+  { "type": "souffle",    "a": -24, "duree": 24 },
+  { "type": "impact",     "a": 0 },
+  { "type": "ping",       "a": 10 }
 ]
 ```
-- `a` : départ en images, relatif au début du plan (négatif = avant la coupe).
-- **montee** : trois voix qui glissent ensemble sur une octave + quinte, avec un souffle discret (V1 3,3–5,6 s, V3 6,3–6,9 s). À mettre pendant qu'une **courbe se trace** ou qu'un compteur monte.
-- **arpege** : une note par double-croche qui monte la gamme pentatonique, du grave vers l'aigu et de gauche à droite. À mettre pendant que des **barres poussent** une par une, avec `duree` = durée de la croissance.
-- **souffle** : bruit qui gonfle et se coupe net à la fin. À mettre **juste avant** la coupe vers un plan important (`a: -24, duree: 24` → il se termine pile sur la coupe ; V3 12,3 s).
-- **impact** : boum grave. Il est ajouté automatiquement à la révélation ; on peut en mettre un ailleurs, une fois au plus.
+`a` : départ en images, relatif au début du plan (négatif = avant la coupe). **Cale-le sur l'horloge de l'animation** : avec une horloge `-6` et une animation qui démarre à `f = 8`, l'animation démarre à l'image 2 du plan → `"a": 2`.
 
-Effets ajoutés automatiquement : souffle inversé + arrêt de la musique + impact + traîne à la révélation, et scintillement seulement si `fin.logo` vaut `true`.
+| Type | Son | Quand |
+|---|---|---|
+| `montee` | Accord de scies qui glisse d'une quinte vers le haut dans un filtre qui s'ouvre | Une **courbe se trace**, un compteur monte. `duree` = durée du tracé |
+| `impulsions` | Une note de synthé grave par barre, en montant | Des **barres poussent** en cascade : `ecart` = images entre deux barres, `nombre` = nombre de barres (ancien nom accepté : `arpege`) |
+| `whoosh` | Passage d'air de gauche à droite | Un élément **traverse** l'image ou la caméra bascule |
+| `souffle` | Souffle inversé qui se termine à `a + duree` | Rarement utile : chaque coupe en a déjà un |
+| `impact` | Coup grave | Un chiffre clé qui tombe. Une fois au plus |
+| `ping` | Ping de sonar | Une alerte qui s'allume |
 
-## Dosage (ce qui fait « cher »)
+**Dosage** : 1 à 2 effets plan par plan sur tout le film, en plus de ce que le script place tout seul (ping d'ouverture, accents de coupe, révélation). Le film d'exemple n'en a que deux (`montee` sur la courbe, `impulsions` sur les barres).
 
-- **2 à 3 effets** sur les plans rapprochés (par exemple une `montee`, un `arpege` et un `souffle`), plus la révélation. Ni clic d'interface ni bruit aux coupes : ce sont les couches musicales qui marquent le passage d'un plan à l'autre.
-- La tension vient de l'**arrangement qui s'épaissit** et du **filtre qui s'ouvre**, pas de l'empilement d'effets.
-- La révélation est le moment le plus fort, puis tout redescend. On garde ~2 s de traîne et un vrai silence à la fin.
-- Garde le son **sombre** : le mastering coupe doucement au-dessus de 8,5 kHz. N'ajoute pas de cymbales ni de souffle aigu.
+## Vérifier le son
+
+1. **À l'écoute** dans le brouillon : chaque coupe est marquée, la courbe « monte », les barres ont chacune leur note, la révélation est le moment le plus fort, puis silence.
+2. **Avec l'oreille automatique** (facultatif, Python) :
+   ```bash
+   pip install tensorflow-cpu tf_keras soundfile scipy   # une fois (~600 Mo)
+   python3 scripts/ecoute.py public/audio/bande-son.wav
+   ```
+   Le script compare l'empreinte de la piste à celle des 5 références et cherche les sons lus de travers. Il doit afficher **« Le son colle au style »** (similarité ≥ 0,80, aucune harpe, aucun « ding »). Repères : références entre elles 0,65–0,85, bande-son d'exemple 0,875, ancienne bande-son rejetée 0,69.
+
+Après toute modification du script ou ajout d'un son, relance `ecoute.py` : c'est le garde-fou contre les sons « cheap ».
 
 ## Le client fournit sa musique
 
 ```bash
 node scripts/bande-son.mjs --sfx-seuls --sortie public/audio/sfx.wav
 ```
-Ensuite, dans `DashboardFilm.tsx`, mets deux `<Html5Audio>` :
+On obtient le design sonore seul (ping, accents de coupe, effets des plans, grondement, explosion, whoosh, battements). Dans `DashboardFilm.tsx`, mets deux `<Html5Audio>` :
 - la musique du client (volume ~0.8), coupée ou filtrée à la révélation comme dans les références ;
 - `sfx.wav`.
 

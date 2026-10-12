@@ -159,13 +159,14 @@ Formulations qui fonctionnent bien :
 
 | Objectif | Exemple de demande |
 |---|---|
-| Ambiance plus planante | « Passe la musique en style nappe, tempo 84. » |
+| Ambiance plus planante | « Passe la musique en style nappe, sans batterie. » |
 | Ambiance plus lumineuse | « Passe la musique en mode majeur, tonalité de la. » |
-| Plus d'énergie | « Monte le tempo à 98 et garde le style pulse. » |
-| Moins d'effets | « Garde seulement la montée du plan 2 et la révélation. » |
-| Effet sur une coupe | « Ajoute un souffle qui se termine pile sur la coupe vers le plan 5. » |
+| Plus d'énergie | « Rends la basse et la grosse caisse plus présentes, et vérifie avec l'écoute automatique. » |
+| Son sur une animation | « Au plan 3, ajoute un whoosh quand la carte traverse l'image. » |
+| Moins d'effets | « Garde seulement les accents de coupe et la révélation. » |
 | Révélation plus douce | « À la révélation, ferme le filtre au lieu de couper net. » |
 | Volume | « La musique est un peu forte : baisse le volume général de 20 %. » |
+| Contrôle | « Passe l'écoute automatique sur la bande-son et corrige ce qu'elle signale. » |
 
 ## 8. Livraison et déclinaisons
 

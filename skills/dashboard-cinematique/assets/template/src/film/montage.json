@@ -26,7 +26,7 @@
         "inclinaison": {"de": 48, "a": 48},
         "rotation": {"de": -19, "a": -21}
       },
-      "son": [{"type": "montee", "a": 2, "duree": 34}]
+      "son": [{"type": "montee", "a": 2, "duree": 30}]
     },
     {
       "id": "usage-rouge",
@@ -51,7 +51,7 @@
         "rotation": {"de": -17, "a": -19},
         "nettete": {"demiLargeur": 15, "fondu": 24}
       },
-      "son": [{"type": "arpege", "a": 2, "duree": 28}]
+      "son": [{"type": "impulsions", "a": 2, "ecart": 5, "nombre": 4}]
     },
     {
       "id": "barre-haute-bouton",
@@ -63,9 +63,9 @@
         "inclinaison": {"de": 46, "a": 45},
         "rotation": {"de": -17, "a": -19}
       },
-      "son": [{"type": "souffle", "a": -24, "duree": 24}]
+      "son": []
     }
   ],
   "fin": {"type": "recul", "logo": false, "part": 0.56, "extinctionDebut": 78, "extinctionDuree": 36, "total": 120, "logoDebut": 48, "logoDuree": 22, "logoTaille": 150},
-  "musique": {"bpm": 92, "tonique": "E", "mode": "mineur", "style": "pulse", "revelation": "arret", "queue": true, "volume": 1.0}
+  "musique": {"bpm": 80, "tonique": "E", "mode": "mineur", "style": "pulse", "revelation": "arret", "queue": true, "volume": 1.0}
 }

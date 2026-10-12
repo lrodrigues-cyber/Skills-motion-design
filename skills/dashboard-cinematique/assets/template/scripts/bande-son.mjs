@@ -1,23 +1,21 @@
 #!/usr/bin/env node
-// Bande-son du style « dashboard cinématique » : musique ORIGINALE + design sonore,
-// calés image par image sur src/film/montage.json. Aucune dépendance (Node ≥ 18).
+// Bande-son du style « dashboard cinématique » : musique ORIGINALE de film électronique sombre
+// + design sonore de cinéma, calés image par image sur src/film/montage.json. Aucune dépendance (Node ≥ 18).
 //
 //   node scripts/bande-son.mjs                       → public/audio/bande-son.wav
 //   node scripts/bande-son.mjs --montage x.json --sortie y.wav --graine 7
 //   node scripts/bande-son.mjs --sfx-seuls        → design sonore seul (le client fournit la musique)
 //
-// Ce que l'analyse des 5 références a montré (et que ce script reproduit) :
-//  • UN SEUL accord tenu pendant toute la vidéo (fa mineur, do mineur, la…) : bourdon sur la
-//    tonique, couleurs d'accord qui glissent par-dessus, jamais de grille « chanson ».
-//  • Sub très profond (énergie forte à 30–45 Hz), médiums chauds, AUCUN aigu brillant
-//    (au-dessus de 8 kHz : -35 à -80 dB) : son sombre et doux.
-//  • Stéréo large (corrélation G/D 0,5–0,8), réverbération ample.
-//  • Une pulsation : motif répétitif en doubles-croches (« pulse », vidéo 4) ou nappe qui
-//    respire (« nappe », vidéos 1-2) ; parfois une grosse caisse douce (vidéo 5).
-//  • L'arrangement MONTE plan après plan (couches qui s'ajoutent, filtre qui s'ouvre),
-//    puis tout s'arrête net à la révélation : souffle inversé, impact grave, longue traîne.
-//  • Aucun bruit aux coupes, aucun clic d'interface : les effets sont musicaux
-//    (montée tonale ou arpège qui monte pendant qu'un graphique pousse).
+// Principes (mesurés sur les 5 références, voir references/recette-son.md) :
+//  • LE SON COLLE AU MONTAGE : chaque plan est une mesure (ou plusieurs) dont le premier temps tombe
+//    exactement sur la coupe. L'accord change à chaque coupe, l'arrangement s'épaissit plan après plan.
+//  • Palette « musique de film électronique » : sub profond, basse pulsée filtrée, nappe sombre large,
+//    arpège grave et doux, batterie électronique feutrée. Jamais de son pincé ou de clochette
+//    (YAMNet les entend comme harpe, clavecin, jeu vidéo ou musique pour enfants).
+//  • Effets de cinéma : ping sonar à l'ouverture, souffle inversé + coup grave sur chaque coupe,
+//    grondement qui monte jusqu'à la révélation, puis la musique s'arrête : explosion sourde, whoosh,
+//    battements, traîne.
+//  • Vérification : python3 scripts/ecoute.py public/audio/bande-son.wav (facultatif).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -46,7 +44,6 @@ const plans = M.plans.map((p) => {
   curseur += p.duree;
   return d;
 });
-const P = plans.map((p) => p.debut / fps); // début de chaque plan, en secondes
 // Garde-fous sur le montage (les erreurs que le contrôle vidéo ne voit pas) :
 for (const p of plans) {
   const decalages = Object.values(p.horloges ?? {});
@@ -63,37 +60,64 @@ const D_LOGO = fin.logoDuree / fps;
 // Révélation : coupe vers le recul, ou début du logo sur la barre du haut, ou début de la fin « barre ».
 const T_REV = fin.type === "aucune" ? null : fin.type === "recul" || T_LOGO === null ? debutFin / fps : T_LOGO;
 const T_MUSIQUE = T_REV ?? DUREE;
-const planA = (k) => P[Math.min(k, P.length - 1)] ?? 0; // entrée des couches, plan par plan
 
-const mus = { bpm: 92, tonique: "E", mode: "mineur", style: "pulse", revelation: "arret", queue: true, volume: 1, ...(M.musique ?? {}) };
+const mus = { bpm: 80, tonique: "E", mode: "mineur", style: "pulse", revelation: "arret", queue: true, volume: 1, ...(M.musique ?? {}) };
+// Dosage des couches, réglé à l'oreille et avec YAMNet contre les références. On peut l'ajuster dans
+// montage.json (musique.reglages, ex. { "basse": 1.3 }) ou en ligne de commande (--reglages '{"arpege":0}') ;
+// relancer ensuite scripts/ecoute.py.
+const R = {
+  sub: 1, nappe: 1, basse: 1, arpege: 0.7, caisse: 1, claquement: 1,
+  arpOctave: -1, arpFiltre: 0.6, arpDecroissance: 0.3, arpResonance: 0.25, arpDensite: 1,
+  montee: 3, reverb: 1, sfx: 0.85, accents: 1, grondement: 1, explosion: 1, whoosh: 1, ping: 1,
+  ...(mus.reglages ?? {}),
+  ...JSON.parse(args.reglages ?? "{}"),
+};
 const NOTES = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
 const pc = NOTES[mus.tonique] ?? 4;
 const MAJ = mus.mode === "majeur";
-const TEMPS = 60 / mus.bpm;
-const DC = TEMPS / 4; // double-croche
-const MESURE = TEMPS * 4;
+const PULSE = mus.style !== "nappe";
 const hz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
-const GAMME = MAJ ? [0, 2, 4, 7, 9] : [0, 3, 7, 10, 14]; // pentatonique pour les arpèges qui montent
 
-// Bourdon sur la tonique + deux couleurs d'accord qui alternent toutes les 2 mesures
-// (demi-tons au-dessus de la tonique, octave 3).
-const COULEURS = MAJ
+// Sections = les plans, puis la fin. Chaque plan contient un nombre ENTIER de mesures : le tempo
+// demandé (bpm) fixe seulement combien de mesures tiennent dans un plan ; le tempo réel s'ajuste
+// pour que chaque coupe tombe sur un premier temps (3 s → 1 mesure à 80 BPM).
+const sections = plans.map((p, k) => {
+  const t0 = p.debut / fps;
+  const duree = p.duree / fps;
+  const mesures = Math.max(1, Math.round(duree / (240 / mus.bpm)));
+  const temps = duree / (mesures * 4);
+  return { k, t0, t1: t0 + duree, duree, mesures, temps, dc: temps / 4 };
+});
+const NS = sections.length;
+const sectionA = (t) => sections.find((s) => t >= s.t0 && t < s.t1) ?? (t < 0 ? sections[0] : sections[NS - 1]);
+// Intensité de 0,35 (1er plan) à 1 (dernier plan) : tout l'arrangement en dépend.
+const intensite = (k) => (NS <= 1 ? 1 : 0.35 + (0.65 * Math.min(k, NS - 1)) / (NS - 1));
+const tempsMoyen = sections.reduce((a, s) => a + s.temps, 0) / NS;
+const bpmReel = 60 / tempsMoyen;
+
+// Grille harmonique : un accord par plan sur une pédale de tonique, résolution sur i à la révélation.
+// Demi-tons au-dessus de la tonique. Mineur : i – VI – iv – VII – V(sus) ; majeur : I – vi – IV – V – V(sus).
+const GRILLE = MAJ
   ? [
-      [0, 7, 16, 19, 26],
-      [-3, 4, 7, 12, 19],
+      { basse: 0, voix: [0, 7, 11, 14, 16] },
+      { basse: -3, voix: [-3, 4, 9, 12, 16] },
+      { basse: 5, voix: [0, 5, 9, 12, 17] },
+      { basse: 7, voix: [2, 7, 11, 14, 19] },
+      { basse: 7, voix: [2, 7, 12, 14, 19] },
     ]
   : [
-      [0, 7, 15, 19, 26], // i (add9), voicing ouvert
-      [-4, 3, 7, 12, 19], // VI maj7 au-dessus du bourdon
+      { basse: 0, voix: [0, 7, 14, 15, 19] }, // i add9
+      { basse: -4, voix: [-4, 3, 7, 11, 15] }, // VI maj7
+      { basse: 5, voix: [0, 5, 8, 12, 15] }, // iv
+      { basse: -2, voix: [-2, 5, 10, 14, 17] }, // VII
+      { basse: -5, voix: [-5, 2, 7, 12, 14] }, // v sus (tension avant la révélation)
     ];
-const couleurA = (t) => COULEURS[Math.floor(Math.max(0, t) / (MESURE * 2)) % COULEURS.length];
-// Motif répétitif sur 2 mesures (tonique, quinte, octave, tierce, neuvième) : il reste sur le bourdon.
-const MOTIF = MAJ
-  ? [0, 12, 7, 12, 16, 12, 7, 12, 0, 12, 7, 12, 14, 12, 7, 9, 0, 12, 7, 12, 16, 12, 7, 12, 0, 12, 7, 14, 16, 14, 12, 7]
-  : [0, 12, 7, 12, 15, 12, 7, 12, 0, 12, 7, 12, 14, 12, 7, 10, 0, 12, 7, 12, 15, 12, 7, 12, 0, 12, 7, 14, 15, 14, 12, 7];
+const RESOLUTION = MAJ ? { basse: 0, voix: [0, 7, 12, 16, 19] } : { basse: 0, voix: [0, 7, 12, 15, 19] };
+const accordDe = (k) => (k >= NS ? RESOLUTION : k === NS - 1 ? GRILLE[GRILLE.length - 1] : GRILLE[k % (GRILLE.length - 1)]);
 
 let etat = Number(args.graine ?? 11) >>> 0 || 11;
 const alea = () => ((etat = (etat * 1664525 + 1013904223) >>> 0) / 4294967296);
+const bruit = () => alea() * 2 - 1;
 
 // ───────────────────────────── Outils DSP ─────────────────────────────
 
@@ -102,7 +126,8 @@ const tampon = () => [new Float32Array(N), new Float32Array(N)];
 const lisse = (x) => x * x * (3 - 2 * x);
 const borne = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const expInterp = (a, b, t) => a * Math.pow(b / a, borne(t));
-const fondu = (t, debut, duree) => lisse(borne((t - debut) / duree));
+const fondu = (t, debut, duree) => (duree <= 0 ? (t >= debut ? 1 : 0) : lisse(borne((t - debut) / duree)));
+const sat = (x, d = 1) => Math.tanh(d * x) / Math.tanh(d);
 
 function polyblep(t, dt) {
   if (t < dt) {
@@ -115,8 +140,11 @@ function polyblep(t, dt) {
   }
   return 0;
 }
+/** Dent de scie à bande limitée (pas de repliement : c'est ce qui rend un synthé « cheap »). */
+const scie = (ph, dt) => 2 * ph - 1 - polyblep(ph, dt);
+const carre = (ph, dt, l = 0.5) => (ph < l ? 1 : -1) + polyblep(ph, dt) - polyblep((ph + 1 - l) % 1, dt);
 
-/** Filtre d'état variable (TPT) : passe-bas / passe-bande / passe-haut, coupure modifiable à chaque échantillon. */
+/** Filtre d'état variable (TPT) : passe-bas / passe-bande / passe-haut. */
 class SVF {
   constructor() {
     this.ic1 = 0;
@@ -135,51 +163,92 @@ class SVF {
   }
 }
 
-/** Réverbération type Freeverb (8 peignes + 4 passe-tout par canal) avec pré-délai. */
-function reverb([L, R], { piece = 0.86, amorti = 0.35, predelai = 0.025 } = {}) {
-  const combs = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617];
-  const passes = [556, 441, 341, 225];
-  const pd = Math.round(predelai * SR);
-  const sortie = tampon();
-  [L, R].forEach((entree, canal) => {
-    const ecart = canal * 23;
-    const cb = combs.map((d) => ({ buf: new Float32Array(d + ecart), i: 0, filt: 0 }));
-    const ap = passes.map((d) => ({ buf: new Float32Array(d + ecart), i: 0 }));
-    const out = sortie[canal];
-    for (let n = 0; n < N; n++) {
-      const x = (n >= pd ? entree[n - pd] : 0) * 0.015;
-      let s = 0;
-      for (const c of cb) {
-        const y = c.buf[c.i];
-        c.filt = y * (1 - amorti) + c.filt * amorti;
-        c.buf[c.i] = x + c.filt * piece;
-        if (++c.i === c.buf.length) c.i = 0;
-        s += y;
-      }
-      for (const a of ap) {
-        const b = a.buf[a.i];
-        a.buf[a.i] = s + b * 0.5;
-        if (++a.i === a.buf.length) a.i = 0;
-        s = b - s;
-      }
-      out[n] = s;
+/** Filtre « échelle » 24 dB/oct (type Moog, sans délai dans la boucle) : le son chaud des synthés analogiques. */
+class Echelle {
+  constructor() {
+    this.s = [0, 0, 0, 0];
+  }
+  run(x, fc, res = 0.2) {
+    const g = Math.tan((Math.PI * Math.min(fc, SR * 0.42)) / SR);
+    const G = g / (1 + g);
+    const k = 4 * res;
+    const s = this.s;
+    const S = (1 - G) * (G * G * G * s[0] + G * G * s[1] + G * s[2] + s[3]);
+    const G4 = G * G * G * G;
+    const y4 = (G4 * x + S) / (1 + k * G4);
+    let u = Math.tanh(x - k * y4);
+    for (let i = 0; i < 4; i++) {
+      const v = (u - s[i]) * G;
+      const y = v + s[i];
+      s[i] = y + v;
+      u = y;
     }
-  });
-  return sortie;
+    return u;
+  }
 }
 
-/** Écho ping-pong (gauche ↔ droite). */
-function pingPong([L, R], retard, retour = 0.35, mixage = 0.3) {
-  const d = Math.round(retard * SR);
+/** Réverbération « salle de cinéma » : réseau de 8 lignes à retard (FDN Hadamard), diffusion d'entrée, amorti. */
+function salle([L, R], { rt60 = 3.2, coupure = 5200, predelai = 0.025, taille = 1 } = {}) {
+  const longueurs = [1031, 1327, 1523, 1801, 2053, 2381, 2713, 3089].map((d) => Math.round(d * taille));
+  const lignes = longueurs.map((d) => new Float32Array(d));
+  const idx = new Int32Array(8);
+  const gains = longueurs.map((d) => Math.pow(10, (-3 * d) / (rt60 * SR)));
+  const filt = new Float64Array(8);
+  const a = Math.exp((-2 * Math.PI * coupure) / SR);
+  const pd = Math.round(predelai * SR);
+  const diff = [142, 107, 379, 277].map((d) => ({ b: new Float32Array(d), i: 0 }));
+  const diffuse = (x) => {
+    for (const ap of diff) {
+      const y = ap.b[ap.i];
+      const w = x + y * 0.6;
+      ap.b[ap.i] = w;
+      if (++ap.i === ap.b.length) ap.i = 0;
+      x = y - w * 0.6;
+    }
+    return x;
+  };
+  const out = tampon();
+  const v = new Float64Array(8);
+  for (let n = 0; n < N; n++) {
+    const xl = n >= pd ? L[n - pd] : 0;
+    const xr = n >= pd ? R[n - pd] : 0;
+    const xm = diffuse((xl + xr) * 0.5);
+    const xs = (xl - xr) * 0.5;
+    for (let i = 0; i < 8; i++) v[i] = lignes[i][idx[i]];
+    out[0][n] = (v[0] + v[2] + v[4] + v[6]) * 0.5;
+    out[1][n] = (v[1] + v[3] + v[5] + v[7]) * 0.5;
+    // Hadamard 8 (normalisé)
+    for (let h = 1; h < 8; h *= 2)
+      for (let i = 0; i < 8; i += h * 2)
+        for (let j = i; j < i + h; j++) {
+          const p = v[j];
+          const q = v[j + h];
+          v[j] = p + q;
+          v[j + h] = p - q;
+        }
+    for (let i = 0; i < 8; i++) {
+      const y = v[i] * 0.35355339 * gains[i];
+      filt[i] = y * (1 - a) + filt[i] * a;
+      lignes[i][idx[i]] = filt[i] + (i % 2 ? xm - xs : xm + xs) * 0.3;
+      if (++idx[i] === longueurs[i]) idx[i] = 0;
+    }
+  }
+  return out;
+}
+
+/** Écho ping-pong filtré (les répétitions s'assombrissent). */
+function pingPong([L, R], retard, retour = 0.38, mixage = 0.32, coupure = 3200) {
+  const d = Math.max(1, Math.round(retard * SR));
   const bl = new Float32Array(d);
   const br = new Float32Array(d);
+  const f = [new SVF(), new SVF()];
   const out = tampon();
   let i = 0;
   for (let n = 0; n < N; n++) {
     const yl = bl[i];
     const yr = br[i];
-    bl[i] = (L[n] + R[n]) * 0.5 + yr * retour;
-    br[i] = yl * retour;
+    bl[i] = f[0].run((L[n] + R[n]) * 0.5 + yr * retour, coupure);
+    br[i] = f[1].run(yl * retour, coupure);
     if (++i === d) i = 0;
     out[0][n] = L[n] + yl * mixage;
     out[1][n] = R[n] + yr * mixage;
@@ -187,8 +256,8 @@ function pingPong([L, R], retard, retour = 0.35, mixage = 0.3) {
   return out;
 }
 
-/** Chorus stéréo : élargit et adoucit les nappes (corrélation G/D des références ≈ 0,5–0,8). */
-function chorus([L, R], { base = 0.016, prof = 0.005, vitesse = 0.23, mixage = 0.75 } = {}) {
+/** Chorus stéréo : élargit et adoucit les nappes. */
+function chorus([L, R], { base = 0.014, prof = 0.004, vitesse = 0.21, mixage = 0.7 } = {}) {
   const taille = Math.ceil((base + prof) * SR) + 4;
   const out = tampon();
   [L, R].forEach((x, c) => {
@@ -212,372 +281,633 @@ function chorus([L, R], { base = 0.016, prof = 0.005, vitesse = 0.23, mixage = 0
 const ajoute = (dst, src, g = 1) => {
   for (let c = 0; c < 2; c++) for (let n = 0; n < N; n++) dst[c][n] += src[c][n] * g;
 };
+/** Écrit un échantillon mono panoramiqué (loi à puissance constante). */
+const pose = (out, n, s, pan = 0.5) => {
+  if (n < 0 || n >= N) return;
+  out[0][n] += s * Math.cos(pan * Math.PI * 0.5) * 1.4142;
+  out[1][n] += s * Math.sin(pan * Math.PI * 0.5) * 1.4142;
+};
 
-// Le son s'ouvre jusqu'à la révélation (coupure des filtres qui monte).
-const ouverture = (t) => lisse(borne(t / T_MUSIQUE));
-// Style « pulse » : la grosse caisse douce entre au 2e plan (tout bas) et creuse le reste à chaque temps.
-const T_CAISSE = mus.style === "pulse" ? planA(1) : Infinity;
-const pompe = (t, force) => (t < T_CAISSE ? 1 : 1 - force * Math.exp(-((t % TEMPS) / 0.13)));
+// ───────────────────────────── Grille rythmique ─────────────────────────────
+
+const FIN_MUSIQUE = T_MUSIQUE; // tout s'arrête net à la révélation
+// Grosse caisse : à partir du 2e plan, sur les temps 1 et 3, puis sur les 4 temps à partir du 3e.
+const coupsCaisse = [];
+if (PULSE)
+  for (const s of sections) {
+    if (s.k < 1) continue;
+    for (let b = 0; b < s.mesures * 4; b++) {
+      if (s.k < 2 && b % 2 === 1) continue;
+      coupsCaisse.push({ t: s.t0 + b * s.temps, v: (b % 4 === 0 ? 1 : 0.82) * (0.7 + 0.3 * intensite(s.k)) });
+    }
+  }
+// Le reste de la musique « respire » avec la grosse caisse (compression en side-chain).
+const creux = new Float32Array(N);
+coupsCaisse.forEach((c, i) => {
+  const n0 = Math.round(c.t * SR);
+  const n1 = i + 1 < coupsCaisse.length ? Math.round(coupsCaisse[i + 1].t * SR) : N;
+  for (let n = n0; n < n1 && n < N; n++) {
+    const d = (n - n0) / SR;
+    creux[n] = c.v * Math.exp(-d / 0.11) * Math.min(1, d / 0.004 + 0.3);
+  }
+});
+const pompe = (t, force) => 1 - force * (creux[Math.min(N - 1, Math.max(0, Math.round(t * SR)))] ?? 0);
+// Enveloppe d'arrêt : 1 jusqu'à la révélation, puis 0 (l'arrêt lui-même est traité au mixage).
+const vivant = (t) => (t < FIN_MUSIQUE ? 1 : 0);
 
 // ───────────────────────────── Instruments ─────────────────────────────
 
-const marge = 1.2; // on rend un peu au-delà de la révélation (arrêt de bande / filtre)
-
-/** Sub-basse : sinus sur la tonique à l'octave 1 (33–62 Hz), légèrement saturé pour exister sur téléphone. */
-function subBasse() {
+/** Sub : sinus sur la tonique (octave 1), un peu d'harmonique 2 pour exister sur téléphone, il pompe. */
+function sub() {
   const out = tampon();
-  const f = hz(24 + pc);
-  const drive = 1.6;
+  const f = hz(28 + pc);
   let ph = 0;
-  for (let n = 0; n < N; n++) {
+  for (let n = 0; n < Math.min(N, (FIN_MUSIQUE + 0.6) * SR); n++) {
     const t = n / SR;
-    if (t > T_MUSIQUE + marge) break;
     ph += f / SR;
-    const s = Math.tanh(drive * Math.sin(2 * Math.PI * ph)) / Math.tanh(drive);
-    const env = fondu(t, 0, 0.35) * (0.75 + 0.25 * ouverture(t)) * pompe(t, 0.5);
-    out[0][n] = out[1][n] = s * env * 0.12;
+    const s = Math.sin(2 * Math.PI * ph) + 0.18 * Math.sin(4 * Math.PI * ph);
+    const k = sectionA(t).k;
+    const env = fondu(t, 0, 1.2) * (0.6 + 0.4 * intensite(k)) * pompe(t, 0.6) * vivant(t);
+    out[0][n] += s * env * 0.16;
+    out[1][n] += s * env * 0.16;
   }
   return out;
 }
 
-/** Nappe : 5 scies désaccordées par note, filtrée chaud, couleurs d'accord en fondu enchaîné. */
+/** Basse pulsée (la « pulsation » des références) : scie + carré dans un filtre échelle, croches puis doubles-croches. */
+function bassePulsee() {
+  const out = tampon();
+  for (const s of sections) {
+    if (PULSE ? s.k < 1 : s.k < 2) continue;
+    const pas = PULSE && s.k >= NS - 2 ? s.dc : s.dc * 2; // doubles-croches sur les 2 derniers plans
+    const nb = Math.round(s.duree / pas);
+    const racineB = 36 + pc; // pédale : la basse reste sur la tonique
+    for (let i = 0; i < nb; i++) {
+      const t0 = s.t0 + i * pas;
+      if (t0 >= FIN_MUSIQUE) break;
+      const surTemps = Math.abs((i * pas) % s.temps) < 1e-6;
+      const vel = (surTemps ? 0.75 : 1) * (0.55 + 0.45 * intensite(s.k)); // contretemps plus forts : ça « roule »
+      const octave = i % 8 === 7 ? 12 : 0;
+      const f = hz(racineB + octave);
+      const filtre = new Echelle();
+      const n0 = Math.round(t0 * SR);
+      const long = Math.round(Math.min(pas * 0.9, 0.3) * SR);
+      let p1 = alea(),
+        p2 = alea();
+      for (let j = 0; j < long + 600; j++) {
+        const tn = j / SR;
+        p1 += (f * 1.003) / SR;
+        p2 += (f * 0.997) / SR;
+        if (p1 >= 1) p1 -= 1;
+        if (p2 >= 1) p2 -= 1;
+        const x = scie(p1, f / SR) * 0.6 + carre(p2, f / SR) * 0.4;
+        const fc = 140 + (380 + 900 * intensite(s.k)) * Math.exp(-tn / 0.07);
+        const env = Math.min(1, tn / 0.003) * (j < long ? 1 : Math.max(0, 1 - (j - long) / 600)) * Math.exp(-tn / 0.35);
+        const y = filtre.run(x, fc, 0.35) * env * vel * pompe(t0 + tn, 0.45) * 0.5;
+        pose(out, n0 + j, y, 0.5);
+      }
+    }
+  }
+  return out;
+}
+
+/** Nappe sombre : 7 scies désaccordées par note dans un filtre échelle + couche « voix » (formants), accord qui change sur la coupe. */
 function nappe() {
   const brut = tampon();
-  for (let t0 = 0; t0 < T_MUSIQUE + marge; t0 += MESURE * 2) {
-    const voix = [];
-    for (const iv of couleurA(t0)) for (let k = 0; k < 5; k++) voix.push({ f: hz(48 + pc + iv) * Math.pow(2, ((k - 2) * 7) / 1200), ph: alea(), pan: k / 4 });
-    const debut = Math.max(0, t0 - 0.8);
-    const finSeg = t0 + MESURE * 2 + 0.8;
-    for (let n = Math.round(debut * SR); n < Math.min(N, finSeg * SR); n++) {
+  const voixFormant = tampon();
+  const bornes = [...sections.map((s) => s.t0), FIN_MUSIQUE];
+  for (let k = 0; k < NS; k++) {
+    const a0 = bornes[k];
+    const a1 = bornes[k + 1];
+    const acc = accordDe(k);
+    const osc = [];
+    for (const iv of acc.voix)
+      for (let u = 0; u < 7; u++) osc.push({ f: hz(52 + pc + iv) * Math.pow(2, ((u - 3) * 6) / 1200), ph: alea(), pan: u / 6 });
+    const form = acc.voix.slice(1, 4).map((iv) => ({ f: hz(64 + pc + iv), ph: alea() }));
+    const xf = 0.06; // fondu enchaîné de 60 ms, centré sur la coupe
+    const n0 = Math.max(0, Math.round((a0 - xf) * SR));
+    const n1 = Math.min(N, Math.round((a1 + xf + (k === NS - 1 ? 0.6 : 0)) * SR));
+    for (let n = n0; n < n1; n++) {
       const t = n / SR;
-      const env = (t0 === 0 ? fondu(t, 0, 1.4) : fondu(t, debut, 1.6)) * (1 - fondu(t, finSeg - 1.6, 1.6));
+      const env = (k === 0 ? fondu(t, 0, 1.6) : fondu(t, a0 - xf, 2 * xf)) * (k === NS - 1 ? 1 : 1 - fondu(t, a1 - xf, 2 * xf));
       if (env <= 0) continue;
       let l = 0,
         r = 0;
-      for (const v of voix) {
-        const dt = v.f / SR;
-        v.ph += dt;
-        if (v.ph >= 1) v.ph -= 1;
-        const s = 2 * v.ph - 1 - polyblep(v.ph, dt);
-        l += s * (1 - v.pan);
-        r += s * v.pan;
+      for (const o of osc) {
+        const dt = o.f / SR;
+        o.ph += dt;
+        if (o.ph >= 1) o.ph -= 1;
+        const s = scie(o.ph, dt);
+        l += s * (1 - o.pan);
+        r += s * o.pan;
       }
       brut[0][n] += l * env;
       brut[1][n] += r * env;
+      let v = 0;
+      for (const o of form) {
+        const dt = o.f / SR;
+        o.ph += dt;
+        if (o.ph >= 1) o.ph -= 1;
+        v += carre(o.ph, dt, 0.3);
+      }
+      voixFormant[0][n] += v * env;
+      voixFormant[1][n] += v * env;
     }
   }
   const out = tampon();
-  const f = [new SVF(), new SVF(), new SVF(), new SVF()];
+  const f = [new Echelle(), new Echelle()];
+  const fa = [new SVF(), new SVF(), new SVF(), new SVF()];
   for (let n = 0; n < N; n++) {
     const t = n / SR;
-    // respiration lente + ouverture progressive ; style « nappe » : trémolo en croches dès le 2e plan
-    const fc = expInterp(420, 2300, ouverture(t)) * (1 + 0.15 * Math.sin(2 * Math.PI * t * 0.11));
-    const trem = mus.style === "nappe" && t > planA(1) ? 1 - 0.35 * fondu(t, planA(1), 2) * (0.5 + 0.5 * Math.cos(2 * Math.PI * (t / (TEMPS / 2)))) : 1;
-    const g = 0.034 * pompe(t, 0.3) * trem;
-    for (let c = 0; c < 2; c++) out[c][n] = f[c + 2].run(f[c].run(brut[c][n], fc, 0.6), fc * 1.4, 0.6) * g;
+    if (t > FIN_MUSIQUE + 0.7) break;
+    const k = sectionA(t).k;
+    // le filtre s'ouvre plan après plan, avec une respiration lente
+    const fc = expInterp(420, 2600, (intensite(k) - 0.35) / 0.65 * 0.85 + 0.15 * borne((t - sections[k].t0) / sections[k].duree)) * (1 + 0.12 * Math.sin(2 * Math.PI * t * 0.13));
+    const g = 0.03 * pompe(t, 0.35) * (0.75 + 0.25 * intensite(k));
+    for (let c = 0; c < 2; c++) {
+      const p = f[c].run(brut[c][n] * 0.25, fc, 0.15);
+      // « ah » : deux formants sur une onde rectangulaire (texture de chœur synthétique, très en retrait)
+      const x = voixFormant[c][n] * 0.2;
+      const voyelle = fa[c].run(x, 700, 4, "bp") + fa[c + 2].run(x, 1150, 5, "bp") * 0.6;
+      out[c][n] = p * g * 3.2 + voyelle * g * 0.9 * (0.4 + 0.6 * intensite(k));
+    }
   }
   return chorus(out);
 }
 
-/** Note « pluck » douce : triangle + un peu de carré, filtrés, petite cloche FM à l'attaque (côté verre). */
-function pluck(out, t0, midi, vel, fcBase, pan, decroissance = 0.16, verre = 0.35) {
-  const f = hz(midi);
-  const dt = f / SR;
-  const svf = new SVF();
-  const n0 = Math.round(t0 * SR);
-  const len = Math.round(decroissance * 6 * SR);
-  let ph = alea(),
-    tri = 0,
-    phb = 0;
-  for (let i = 0; i < len && n0 + i < N; i++) {
-    const tn = i / SR;
-    ph += dt;
-    if (ph >= 1) ph -= 1;
-    const sq = (ph < 0.5 ? 1 : -1) + polyblep(ph, dt) - polyblep((ph + 0.5) % 1, dt);
-    tri = tri * 0.999 + sq * dt * 4; // carré intégré ≈ triangle
-    phb += (f * 2) / SR;
-    const cloche = Math.sin(2 * Math.PI * phb + 1.2 * Math.sin(2 * Math.PI * phb * 1.5)) * Math.exp(-tn / 0.05) * verre;
-    const env = Math.min(1, tn / 0.003) * Math.exp(-tn / decroissance);
-    const fc = fcBase * (1 + 2.5 * Math.exp(-tn / 0.035));
-    const s = (svf.run(tri * 0.8 + sq * 0.12, fc, 0.9) + cloche) * env * vel;
-    out[0][n0 + i] += s * (1 - pan);
-    out[1][n0 + i] += s * pan;
-  }
-}
-
-/** Motif répétitif en doubles-croches (style « pulse ») — il reste sur le bourdon. */
-function ostinato(debut, finT, { gain = 1, octave = 0, densite = 1, fcFixe = null, verre = 0.35 } = {}) {
+/** Arpège de synthé (scie + carré, filtre résonant à enveloppe) sur les notes de l'accord du plan. */
+function arpege() {
   const out = tampon();
-  for (let i = Math.ceil(debut / DC); i * DC < finT; i++) {
-    if (densite < 1 && i % Math.round(1 / densite) !== 0) continue;
-    const t = i * DC;
-    const note = 60 + pc + MOTIF[i % MOTIF.length] + octave * 12;
-    const accent = i % 4 === 0 ? 1 : i % 2 === 0 ? 0.7 : 0.5;
-    // discret au 1er plan, présent dès le 2e, plus fort en approchant de la révélation
-    const presence = 0.62 + 0.23 * fondu(t, planA(1), 1.5) + 0.15 * ouverture(t);
-    const fc = fcFixe ?? expInterp(650, 4200, ouverture(t));
-    pluck(out, t, note, accent * presence * gain * 0.3, fc, 0.5 + 0.42 * Math.sin(i * 1.7), 0.16, verre);
-  }
-  return out;
-}
-
-/** Grosse caisse douce (style « pulse », dès le 2e plan) : sinus qui descend, sans clic. */
-function caisse(debut, finT) {
-  const out = tampon();
-  for (let k = Math.ceil(debut / TEMPS); k * TEMPS < finT; k++) {
-    const t0 = k * TEMPS;
-    const v = (k % 4 === 0 ? 1 : 0.8) * (0.4 + 0.6 * fondu(t0, debut, MESURE * 2));
-    let ph = 0;
-    const n0 = Math.round(t0 * SR);
-    for (let i = 0; i < 1.2 * SR && n0 + i < N; i++) {
-      const tn = i / SR;
-      ph += expInterp(110, 44, tn / 0.08) / SR;
-      const s = Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.002) * Math.exp(-tn / 0.22) * v * 0.5;
-      out[0][n0 + i] += s;
-      out[1][n0 + i] += s;
+  const MOTIF = [0, 2, 1, 3, 2, 4, 3, 1, 0, 2, 1, 3, 4, 3, 2, 1];
+  for (const s of sections) {
+    const acc = accordDe(s.k).voix.slice(0, 4);
+    const notes = [...acc, ...acc.map((x) => x + 12)];
+    const densite = (s.k === 0 ? 2 : 1) * R.arpDensite; // croches au 1er plan, doubles-croches ensuite
+    const nb = Math.round(s.duree / s.dc);
+    for (let i = 0; i < nb; i += densite) {
+      const t0 = s.t0 + i * s.dc;
+      if (t0 >= FIN_MUSIQUE) break;
+      const midi = 52 + 12 * R.arpOctave + pc + notes[MOTIF[i % MOTIF.length] % notes.length];
+      const f = hz(midi);
+      const vel = (i % 4 === 0 ? 1 : i % 2 === 0 ? 0.78 : 0.62) * (0.45 + 0.55 * intensite(s.k));
+      const filtre = new Echelle();
+      const n0 = Math.round(t0 * SR);
+      const long = Math.round(0.42 * SR);
+      let p1 = alea(),
+        p2 = alea();
+      const pan = 0.5 + 0.35 * Math.sin(i * 0.9 + s.k);
+      const fBase = (380 + 1500 * Math.pow(intensite(s.k), 1.4)) * R.arpFiltre;
+      for (let j = 0; j < long; j++) {
+        const tn = j / SR;
+        p1 += (f * 1.004) / SR;
+        p2 += (f * 0.996) / SR;
+        if (p1 >= 1) p1 -= 1;
+        if (p2 >= 1) p2 -= 1;
+        const x = scie(p1, f / SR) * 0.55 + carre(p2, f / SR, 0.42) * 0.45;
+        const fc = fBase * (1 + 2.2 * Math.exp(-tn / 0.06));
+        const env = Math.min(1, tn / 0.004) * Math.exp(-tn / R.arpDecroissance) * (1 - fondu(tn, 0.36, 0.06));
+        pose(out, n0 + j, filtre.run(x, fc, R.arpResonance) * env * vel * pompe(t0 + tn, 0.3) * 0.16, pan);
+      }
     }
   }
   return out;
 }
 
-/** Scintillement aigu doux (dès le 4e plan) : le motif à l'octave, une note sur deux, filtré. */
-const scintillement = (debut, finT) => ostinato(debut, finT, { gain: 0.45, octave: 1, densite: 0.5, fcFixe: 3200, verre: 0.6 });
+// ── Batterie électronique douce ──
+
+function grosseCaisse(out, t0, v) {
+  const n0 = Math.round(t0 * SR);
+  const hp = new SVF();
+  let ph = 0;
+  for (let j = 0; j < 0.7 * SR; j++) {
+    const tn = j / SR;
+    ph += expInterp(155, 47, tn / 0.05) / SR;
+    const corps = Math.sin(2 * Math.PI * ph) * Math.exp(-tn / 0.28);
+    const clic = hp.run(bruit(), 3000, 0.7, "hp") * Math.exp(-tn / 0.0025) * 0.25;
+    pose(out, n0 + j, sat((corps + clic) * 1.2, 1.4) * v * 0.55, 0.5);
+  }
+}
+function claquement(out, t0, v) {
+  const n0 = Math.round(t0 * SR);
+  const f = new SVF();
+  for (let j = 0; j < 0.4 * SR; j++) {
+    const tn = j / SR;
+    const salves = [0, 0.009, 0.019].reduce((a, d) => a + (tn >= d ? Math.exp(-(tn - d) / 0.006) : 0), 0);
+    const env = salves * 0.6 + Math.exp(-tn / 0.11) * 0.5;
+    pose(out, n0 + j, f.run(bruit(), 1300, 1.1, "bp") * env * v * 0.35, 0.5);
+  }
+}
+function batterie() {
+  const sec = tampon();
+  const mouille = tampon(); // partie envoyée dans la réverbération
+  if (!PULSE) return { sec, mouille };
+  for (const c of coupsCaisse) if (c.t < FIN_MUSIQUE) grosseCaisse(sec, c.t, c.v * R.caisse);
+  for (const s of sections) {
+    const nb = Math.round(s.duree / s.dc);
+    for (let i = 0; i < nb; i++) {
+      const t = s.t0 + i * s.dc;
+      if (t >= FIN_MUSIQUE) break;
+      // claquement sur les temps 2 et 4 dès le 4e plan
+      if (s.k >= 3 && i % 8 === 4) claquement(mouille, t, 0.8 * intensite(s.k) * R.claquement);
+    }
+    // dernier plan : roulement qui accélère vers la révélation (tension de bande-annonce)
+    if (s.k === NS - 1 && NS >= 3) {
+      const debut = s.t0 + s.duree * 0.5;
+      for (let t = debut, pas = s.dc; t < s.t1 - 0.01; t += pas, pas = Math.max(s.dc / 4, pas * 0.86)) {
+        claquement(mouille, t, (0.25 + 0.55 * ((t - debut) / (s.t1 - debut))) * R.claquement);
+      }
+    }
+  }
+  return { sec, mouille };
+}
+
+
+// Niveau par plan : les références gardent un volume presque constant (≤ 3 dB d'écart du 1er au dernier plan).
+// La tension vient de l'arrangement qui s'épaissit, pas du volume : on mesure chaque plan et on le cale
+// sur une pente douce de R.montee dB (le 1er plan n'est jamais « trop bas » sur un téléphone).
+function appliqueMontee(...bufs) {
+  const [m] = bufs;
+  const rmsPlan = sections.map((s) => {
+    let e = 0;
+    const a = Math.round(s.t0 * SR);
+    const b = Math.min(N, Math.round(Math.min(s.t1, FIN_MUSIQUE) * SR));
+    for (let n = a; n < b; n++) e += (m[0][n] ** 2 + m[1][n] ** 2) / 2;
+    return Math.sqrt(e / Math.max(1, b - a)) || 1e-9;
+  });
+  const ref = rmsPlan[NS - 1];
+  const gains = sections.map((s, k) => {
+    const cible = -R.montee * (1 - (NS <= 1 ? 1 : k / (NS - 1)));
+    return borne(Math.pow(10, cible / 20) / (rmsPlan[k] / ref), 0.5, 4);
+  });
+  for (let n = 0; n < N; n++) {
+    const t = n / SR;
+    const s = sectionA(t);
+    const prec = s.k > 0 ? gains[s.k - 1] : gains[0];
+    const g = prec + (gains[s.k] - prec) * fondu(t, s.t0 - 0.03, 0.06);
+    for (const buf of bufs) {
+      buf[0][n] *= g;
+      buf[1][n] *= g;
+    }
+  }
+}
 
 // ───────────────────────────── Design sonore ─────────────────────────────
 
-/** Montée tonale (graphique qui pousse) : 3 voix triangle qui glissent ensemble + souffle discret. */
-function montee(out, t0, duree) {
-  const f0 = hz(48 + pc);
-  const f1 = f0 * Math.pow(2, 19 / 12);
-  const voix = [-6, 0, 6].map((c) => ({ c, ph: alea() }));
-  const bp = [new SVF(), new SVF()];
+/** Ping sonar d'ouverture (référence 3) : sinus grave qui glisse un peu vers le bas, attaque douce, sans résonance de cloche. */
+function ping(out, t0, force = 1) {
   const n0 = Math.round(t0 * SR);
-  for (let i = 0; i < (duree + 1.0) * SR && n0 + i < N; i++) {
-    const tn = i / SR;
-    const p = borne(tn / duree);
-    const f = expInterp(f0, f1, lisse(p));
-    let s = 0;
-    for (const v of voix) {
-      v.ph += (f * Math.pow(2, v.c / 1200)) / SR;
-      s += 4 * Math.abs((v.ph % 1) - 0.5) - 1;
+  const f = hz(64 + pc);
+  let ph = 0;
+  for (let j = 0; j < 1.4 * SR; j++) {
+    const tn = j / SR;
+    ph += (f * (1 - 0.06 * Math.min(1, tn / 0.9))) / SR;
+    const s = Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.02) * Math.exp(-tn / 0.32);
+    pose(out, n0 + j, s * 0.12 * force, 0.5);
+  }
+}
+
+/** Battement grave (fin de la référence 3) : deux pulsations de sub, comme un cœur. */
+function battement(out, t0, force = 1) {
+  for (const [d, v] of [
+    [0, 1],
+    [0.32, 0.7],
+  ]) {
+    const n0 = Math.round((t0 + d) * SR);
+    let ph = 0;
+    const lp = new SVF();
+    for (let j = 0; j < 0.6 * SR && n0 + j < N; j++) {
+      const tn = j / SR;
+      ph += expInterp(70, 42, tn / 0.12) / SR;
+      const y = Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.006) * Math.exp(-tn / 0.16) + lp.run(bruit(), 200, 0.7) * Math.exp(-tn / 0.03) * 0.3;
+      pose(out, n0 + j, sat(y * 1.4, 1.5) * v * force * 0.45, 0.5);
     }
-    const env = fondu(tn, 0, 0.35) * (tn < duree ? 0.55 + 0.45 * p : Math.exp(-(tn - duree) / 0.18));
-    const bruit = bp[0].run(alea() * 2 - 1, f * 4, 2.5, "bp") * 0.5;
-    const y = (bp[1].run(s / 3, f * 2.2, 0.8) + bruit) * env * 0.11;
-    out[0][n0 + i] += y * 0.85;
-    out[1][n0 + i] += y;
   }
 }
 
-/** Arpège qui monte, note par note, pendant que des barres poussent. */
-function arpege(out, t0, duree) {
-  const nb = Math.max(4, Math.round(duree / DC));
-  for (let k = 0; k < nb; k++) {
-    const deg = GAMME[k % GAMME.length] + 12 * Math.floor(k / GAMME.length);
-    const v = 0.5 + 0.5 * (k / (nb - 1));
-    pluck(out, t0 + k * DC, 64 + pc + deg, v * 0.22, 5200, 0.25 + 0.5 * (k / (nb - 1)), 0.22, 0.7);
-  }
-}
-
-/** Souffle qui gonfle et se coupe net (avant une coupe importante). */
-function souffle(out, t0, duree) {
-  const bp = [new SVF(), new SVF()];
-  const n0 = Math.max(0, Math.round(t0 * SR));
-  for (let i = 0; i < duree * SR && n0 + i < N; i++) {
-    const p = i / (duree * SR);
-    const fc = expInterp(300, 2600, p);
-    const env = Math.pow(p, 2.4) * borne((1 - p) / 0.03);
-    out[0][n0 + i] += bp[0].run(alea() * 2 - 1, fc, 1.2, "bp") * env * 0.2;
-    out[1][n0 + i] += bp[1].run(alea() * 2 - 1, fc * 1.08, 1.2, "bp") * env * 0.2;
-  }
-}
-
-/** Souffle INVERSÉ avant la révélation : la réverbération d'un accord, jouée à l'envers. */
-function souffleInverse(out, tFin, duree = 0.9) {
+/** Souffle inversé : la réverbération d'un accord et d'un bruit, jouée à l'envers, qui se termine pile sur tFin. */
+function souffleInverse(out, tFin, duree, force = 1, k = 0) {
   const acc = tampon();
-  const notes = couleurA(tFin - 0.1).map((iv) => hz(60 + pc + iv));
-  for (let i = 0; i < 0.25 * SR; i++) {
+  const notes = accordDe(k).voix.map((iv) => hz(64 + pc + iv));
+  const lp = new SVF();
+  for (let i = 0; i < 0.3 * SR; i++) {
     let s = 0;
     for (const f of notes) s += Math.sin((2 * Math.PI * f * i) / SR);
-    const e = Math.exp(-i / SR / 0.08) * 0.12;
-    acc[0][i] += s * e;
-    acc[1][i] += s * e;
+    const e = Math.exp(-i / SR / 0.07);
+    const b = lp.run(bruit(), 1100, 0.7) * 1.4;
+    acc[0][i] += (s * 0.1 + b) * e;
+    acc[1][i] += (s * 0.1 + b) * e;
   }
-  const r = reverb(acc, { piece: 0.93, amorti: 0.45, predelai: 0 });
+  const r = salle(acc, { rt60: 2.4, coupure: 4000, predelai: 0 });
   const n1 = Math.round(tFin * SR);
   const nd = Math.round(duree * SR);
   for (let i = 0; i < nd; i++) {
     const n = n1 - nd + i;
-    if (n < 0) continue;
-    const src = nd - 1 - i; // lecture à l'envers
-    const env = lisse(i / nd);
-    out[0][n] += r[0][src] * env * 2.2;
-    out[1][n] += r[1][src] * env * 2.2;
+    if (n < 0 || n >= N) continue;
+    const src = nd - 1 - i;
+    const env = Math.pow(i / nd, 1.6);
+    out[0][n] += r[0][src] * env * 1.6 * force;
+    out[1][n] += r[1][src] * env * 1.6 * force;
   }
 }
 
-/** Impact de la révélation : boum grave qui descend + souffle sourd. */
-function impact(out, t0) {
+/** Coup grave sur une coupe : sinus qui tombe + souffle sourd (un « boum » de bande-annonce, discret). */
+function coupGrave(out, t0, force = 1) {
+  const n0 = Math.round(t0 * SR);
   const lp = [new SVF(), new SVF()];
   let ph = 0;
-  const n0 = Math.round(t0 * SR);
-  for (let i = 0; i < 4.5 * SR && n0 + i < N; i++) {
-    const tn = i / SR;
-    ph += expInterp(62, 31, borne(tn / 0.9)) / SR;
-    const corps = Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.004) * Math.exp(-tn / 1.1) * (1 - fondu(tn, 3.6, 0.9)) * 0.6;
-    const bruit = (alea() * 2 - 1) * Math.exp(-tn / 0.4) * 0.3;
-    out[0][n0 + i] += corps + lp[0].run(bruit, 700, 0.7);
-    out[1][n0 + i] += corps + lp[1].run(bruit, 760, 0.7);
+  for (let j = 0; j < 1.6 * SR; j++) {
+    const tn = j / SR;
+    ph += expInterp(78, 38, tn / 0.35) / SR;
+    const corps = Math.sin(2 * Math.PI * ph) * Math.min(1, tn / 0.003) * Math.exp(-tn / 0.45);
+    const b = bruit() * Math.exp(-tn / 0.08);
+    out[0][n0 + j] += (sat(corps * 1.3, 1.5) * 0.35 + lp[0].run(b, 380, 0.8) * 0.5) * force;
+    out[1][n0 + j] += (sat(corps * 1.3, 1.5) * 0.35 + lp[1].run(b, 420, 0.8) * 0.5) * force;
+    if (n0 + j >= N - 1) break;
   }
 }
 
-/** Scintillement du logo (seulement si fin.logo) : souffle aérien + cloche douce. */
-function scintillementLogo(out, t0, duree) {
-  const bp = [new SVF(), new SVF()];
+/** Grondement qui monte (références 3 et 4) : bruit grave qui s'ouvre + scies qui glissent vers le haut, coupé net à tFin. */
+function grondement(out, t0, tFin, force = 1) {
   const n0 = Math.round(t0 * SR);
-  for (let i = 0; i < (duree + 0.5) * SR && n0 + i < N; i++) {
-    const tn = i / SR;
-    const p = borne(tn / duree);
-    const env = lisse(p) * (tn < duree ? 1 : Math.exp(-(tn - duree) / 0.15));
-    out[0][n0 + i] += bp[0].run(alea() * 2 - 1, expInterp(800, 2600, p), 2.2, "bp") * env * 0.14;
-    out[1][n0 + i] += bp[1].run(alea() * 2 - 1, expInterp(880, 2900, p), 2.2, "bp") * env * 0.14;
+  const n1 = Math.round(tFin * SR);
+  const lp = [new SVF(), new SVF(), new Echelle(), new Echelle()];
+  let brun = [0, 0];
+  const voix = [-9, 0, 9].map((c) => ({ c, ph: alea() }));
+  for (let n = n0; n < n1 && n < N; n++) {
+    const p = (n - n0) / (n1 - n0);
+    const tn = (n - n0) / SR;
+    brun = brun.map((b) => (b + 0.02 * bruit()) * 0.998);
+    const fc = expInterp(70, 1400, Math.pow(p, 1.3));
+    let saw = 0;
+    const f = expInterp(hz(28 + pc), hz(52 + pc), Math.pow(p, 1.6));
+    for (const v of voix) {
+      const fv = f * Math.pow(2, v.c / 1200);
+      v.ph += fv / SR;
+      if (v.ph >= 1) v.ph -= 1;
+      saw += scie(v.ph, fv / SR);
+    }
+    const env = Math.pow(p, 1.8) * fondu(tn, 0, 0.3) * borne((1 - p) / 0.004);
+    for (let c = 0; c < 2; c++) {
+      const g = lp[c].run(brun[c] * 9, fc, 0.9) * 0.9;
+      const s = lp[c + 2].run(saw / 3, fc * 1.4, 0.3) * 0.35;
+      out[c][n] += (g + s) * env * force * 0.5;
+    }
   }
-  pluck(out, t0 + duree * 0.92, 76 + pc, 0.2, 6000, 0.5, 0.5, 0.9);
-  pluck(out, t0 + duree * 0.92, 83 + pc, 0.12, 6000, 0.5, 0.5, 0.9);
+}
+
+/** Whoosh (un objet qui passe devant la caméra) : bruit dans des passe-bandes qui montent puis redescendent, de gauche à droite. */
+function whoosh(out, t0, duree, force = 1, sens = 1) {
+  const n0 = Math.round(t0 * SR);
+  const bp = [new SVF(), new SVF(), new SVF()];
+  for (let j = 0; j < duree * SR; j++) {
+    const p = j / (duree * SR);
+    // passage : montée rapide (60 %), redescente plus courte, comme un effet Doppler
+    const q = p < 0.6 ? p / 0.6 : 1 - (p - 0.6) / 0.4;
+    const cloche = Math.pow(Math.sin((Math.PI / 2) * q), 3) * (p < 0.6 ? 1 : 1 - 0.4 * (p - 0.6) / 0.4);
+    const fc = 350 * Math.pow(10, q);
+    const b = bruit();
+    const x = bp[0].run(b, fc, 1.3, "bp") + bp[1].run(b, fc * 2.4, 2.2, "bp") * 0.45 + bp[2].run(b, 180, 0.7) * 0.2 * cloche;
+    pose(out, n0 + j, x * cloche * force * 0.6, sens > 0 ? 0.1 + 0.8 * p : 0.9 - 0.8 * p);
+  }
+}
+
+/** Explosion sourde de la révélation : chute de sub (60 → 26 Hz) + souffle grave qui se referme. */
+function explosion(out, t0, force = 1) {
+  const n0 = Math.round(t0 * SR);
+  const lp = [new SVF(), new SVF()];
+  let ph = 0;
+  for (let j = 0; j < 4.5 * SR && n0 + j < N; j++) {
+    const tn = j / SR;
+    ph += expInterp(62, 26, tn / 1.4) / SR;
+    const corps = sat(Math.sin(2 * Math.PI * ph) * 1.6, 1.8) * Math.min(1, tn / 0.004) * Math.exp(-tn / 1.25) * 0.55;
+    const fc = expInterp(1300, 120, tn / 0.9);
+    const b = bruit() * (Math.exp(-tn / 0.5) * 0.8 + Math.exp(-tn / 0.02) * 0.6);
+    out[0][n0 + j] += (corps + lp[0].run(b, fc, 0.8) * 0.55) * force;
+    out[1][n0 + j] += (corps + lp[1].run(b, fc * 1.07, 0.8) * 0.55) * force;
+  }
+}
+
+/** Montée tonale (une courbe qui se trace) : accord de scies qui glisse d'une quinte vers le haut dans un filtre qui s'ouvre. */
+function montee(out, t0, duree, k) {
+  const n0 = Math.round(t0 * SR);
+  const notes = accordDe(k).voix.slice(0, 3).map((iv) => hz(52 + pc + iv));
+  const osc = notes.flatMap((f) => [-7, 7].map((c) => ({ f: f * Math.pow(2, c / 1200), ph: alea() })));
+  const lp = [new Echelle(), new Echelle()];
+  for (let j = 0; j < (duree + 0.5) * SR && n0 + j < N; j++) {
+    const tn = j / SR;
+    const p = borne(tn / duree);
+    const glisse = Math.pow(2, (7 * lisse(p)) / 12);
+    let l = 0,
+      r = 0;
+    osc.forEach((o, i) => {
+      const f = o.f * glisse;
+      o.ph += f / SR;
+      if (o.ph >= 1) o.ph -= 1;
+      const s = scie(o.ph, f / SR);
+      if (i % 2) r += s;
+      else l += s;
+    });
+    const fc = expInterp(300, 3200, p);
+    const env = fondu(tn, 0, duree * 0.3) * (tn < duree ? 0.4 + 0.6 * p : Math.exp(-(tn - duree) / 0.12));
+    out[0][n0 + j] += lp[0].run(l * 0.2, fc, 0.4) * env * 0.5;
+    out[1][n0 + j] += lp[1].run(r * 0.2, fc, 0.4) * env * 0.5;
+  }
+}
+
+/** Impulsions graves (des barres qui poussent) : une note de synthé grave par barre, en montant,
+ *  au moment exact où chaque barre démarre (`ecart` images entre deux barres, `nombre` barres). */
+function impulsions(out, t0, duree, k, ecart = null, nombre = 5) {
+  const acc = accordDe(k).voix;
+  const nb = nombre;
+  for (let i = 0; i < nb; i++) {
+    const t = t0 + (ecart !== null ? (i * ecart) / fps : (i * duree) / nb);
+    const f = hz(40 + pc + acc[i % acc.length]);
+    const filtre = new Echelle();
+    const n0 = Math.round(t * SR);
+    let ph = alea();
+    for (let j = 0; j < 0.35 * SR; j++) {
+      const tn = j / SR;
+      ph += f / SR;
+      if (ph >= 1) ph -= 1;
+      const y = filtre.run(scie(ph, f / SR), 200 + 1400 * Math.exp(-tn / 0.05), 0.4) * Math.min(1, tn / 0.003) * Math.exp(-tn / 0.12);
+      pose(out, n0 + j, y * (0.5 + 0.1 * i) * 0.4, 0.3 + 0.1 * i);
+    }
+  }
 }
 
 // ───────────────────────────── Assemblage ─────────────────────────────
 
 console.log(
-  `Bande-son : ${DUREE.toFixed(2)} s, ${mus.bpm} BPM, ${mus.tonique} ${mus.mode}, style ${mus.style}, révélation ${T_REV?.toFixed(2) ?? "—"} s${T_LOGO ? `, logo ${T_LOGO.toFixed(2)} s` : ""}`,
+  `Bande-son : ${DUREE.toFixed(2)} s, ${bpmReel.toFixed(1)} BPM (calé sur les coupes), ${mus.tonique} ${mus.mode}, style ${mus.style}, révélation ${T_REV?.toFixed(2) ?? "—"} s`,
 );
 
 // 1. musique : l'arrangement s'enrichit plan après plan
 const musique = tampon();
+const envoi = tampon(); // vers la réverbération
 if (!SFX_SEULS) {
-  const FINM = T_MUSIQUE + marge;
   const nap = nappe();
-  ajoute(musique, subBasse(), 1);
-  ajoute(musique, nap, 1);
-  const envoi = tampon();
-  ajoute(envoi, nap, 0.5);
-  if (mus.style === "pulse") {
-    const ost = pingPong(ostinato(0, FINM), DC * 3, 0.32, 0.28);
-    ajoute(musique, ost, 1);
-    ajoute(envoi, ost, 0.45);
-    ajoute(musique, caisse(T_CAISSE, T_MUSIQUE), 1);
-  } else {
-    const ost = pingPong(ostinato(planA(2), FINM, { gain: 0.55, densite: 0.5 }), DC * 3, 0.4, 0.35);
-    ajoute(musique, ost, 1);
-    ajoute(envoi, ost, 0.6);
-  }
-  const sci = pingPong(scintillement(planA(3), FINM), DC * 3, 0.4, 0.35);
-  ajoute(musique, sci, 1);
-  ajoute(envoi, sci, 0.7);
-  ajoute(musique, reverb(envoi, { piece: 0.88 }), 1.2);
+  ajoute(musique, sub(), R.sub);
+  ajoute(musique, nap, R.nappe);
+  ajoute(envoi, nap, 0.55 * R.nappe);
+  const bp = bassePulsee();
+  ajoute(musique, bp, R.basse);
+  ajoute(envoi, bp, 0.08 * R.basse);
+  const arp = pingPong(arpege(), tempsMoyen * 0.75, 0.42, 0.34, 2600);
+  ajoute(musique, arp, R.arpege);
+  ajoute(envoi, arp, 0.45 * R.arpege);
+  const bat = batterie();
+  ajoute(musique, bat.sec, 1);
+  ajoute(musique, bat.mouille, 0.8);
+  ajoute(envoi, bat.mouille, 0.9);
+  ajoute(envoi, bat.sec, 0.06);
+  appliqueMontee(musique, envoi);
 }
 
-// 2. la musique s'arrête à la révélation
-if (T_REV !== null && !SFX_SEULS) {
-  const n0 = Math.round(T_REV * SR);
-  if (mus.revelation === "filtre") {
-    // le filtre se ferme d'un coup, le niveau tombe (vidéo 2)
-    const lp = [new SVF(), new SVF()];
-    for (let n = n0; n < N; n++) {
-      const tn = (n - n0) / SR;
-      const fc = expInterp(3000, 160, borne(tn / 0.35));
-      const g = Math.exp(-tn / 0.9);
-      for (let c = 0; c < 2; c++) musique[c][n] = lp[c].run(musique[c][n], fc, 0.7) * g;
-    }
-  } else {
-    // arrêt de bande : la lecture ralentit jusqu'à zéro en 0,45 s (vidéo 4)
-    const source = [Float32Array.from(musique[0]), Float32Array.from(musique[1])];
-    let lecture = n0;
-    const D = 0.45 * SR;
-    for (let n = n0; n < N; n++) {
-      const k = n - n0;
-      const vitesse = k < D ? Math.pow(1 - k / D, 1.5) : 0;
-      lecture += vitesse;
-      const i = Math.floor(lecture);
-      const fr = lecture - i;
-      const g = k < D ? 1 - Math.pow(k / D, 3) : 0;
-      for (let c = 0; c < 2; c++) musique[c][n] = (source[c][i] * (1 - fr) + (source[c][i + 1] ?? 0) * fr) * g;
-    }
-  }
-}
-
-// 3. design sonore
+// 2. design sonore structurel : il suit le montage automatiquement
 const sfx = tampon();
-for (const p of plans) {
-  for (const e of p.son ?? []) {
-    const t0 = (p.debut + (e.a ?? 0)) / fps;
-    const d = (e.duree ?? 30) / fps;
-    if (e.type === "montee") montee(sfx, t0, d);
-    if (e.type === "arpege") arpege(sfx, t0, d);
-    if (e.type === "souffle") souffle(sfx, t0, d);
-    if (e.type === "impact") impact(sfx, t0);
-  }
+const envoiSfx = tampon();
+ping(envoiSfx, 0.02, 0.25 * R.ping);
+ping(sfx, 0.02, (SFX_SEULS ? 1.4 : 0.8) * R.ping);
+for (const s of sections) {
+  if (s.k === 0) continue;
+  const f = 0.45 + 0.5 * intensite(s.k);
+  souffleInverse(sfx, s.t0, Math.min(0.6, s.duree * 0.2), 0.35 * f * R.accents, s.k);
+  coupGrave(sfx, s.t0, 0.6 * f * R.accents);
 }
 if (T_REV !== null) {
-  souffleInverse(sfx, T_REV);
-  impact(sfx, T_REV);
-  // traîne : la nappe continue, très filtrée, et s'éteint (vidéos 1 et 3)
+  grondement(sfx, Math.max(0, (sections[Math.max(0, NS - 2)]?.t0 ?? 0) + 0.2), T_REV, R.grondement);
+  souffleInverse(sfx, T_REV, 1.1, 1.1 * R.explosion, NS - 1);
+  explosion(sfx, T_REV, R.explosion);
+  // comme la référence 3 : whoosh rapide pendant le recul, puis deux battements graves
+  whoosh(sfx, T_REV + 0.08, 0.7, 1.5 * R.whoosh, 1);
+  if (DUREE - T_REV > 2.4) battement(sfx, T_REV + 1.9, 0.8 * R.explosion);
+  // traîne : l'accord de résolution, très filtré, qui s'éteint (références 1 et 3)
   if (mus.queue !== false && !SFX_SEULS) {
     const q = tampon();
-    const lp = [new SVF(), new SVF()];
-    const voix = couleurA(T_REV - 0.1).flatMap((iv) => [-8, 8].map((c) => ({ f: hz(48 + pc + iv) * Math.pow(2, c / 1200), ph: alea() })));
+    const lp = [new Echelle(), new Echelle()];
+    const voix = accordDe(NS).voix.flatMap((iv) => [-7, 7].map((c) => ({ f: hz(52 + pc + iv) * Math.pow(2, c / 1200), ph: alea() })));
+    let phs = 0;
     for (let n = Math.round(T_REV * SR); n < N; n++) {
       const tn = n / SR - T_REV;
       let s = 0;
-      for (const v of voix) {
+      voix.forEach((v) => {
         v.ph += v.f / SR;
         if (v.ph >= 1) v.ph -= 1;
-        s += 2 * v.ph - 1;
-      }
-      const env = fondu(tn, 0.15, 0.6) * Math.exp(-tn / 1.4) * 0.016;
-      q[0][n] = lp[0].run(s, 380, 0.7) * env;
-      q[1][n] = lp[1].run(s, 420, 0.7) * env;
+        s += scie(v.ph, v.f / SR);
+      });
+      phs += hz(28 + pc) / SR;
+      const env = fondu(tn, 0.25, 0.8) * Math.exp(-tn / 1.5);
+      const fc = expInterp(900, 220, tn / 3);
+      q[0][n] = lp[0].run(s * 0.12, fc, 0.2) * env * 0.5 + Math.sin(2 * Math.PI * phs) * env * 0.05;
+      q[1][n] = lp[1].run(s * 0.12, fc, 0.2) * env * 0.5 + Math.sin(2 * Math.PI * phs) * env * 0.05;
     }
-    ajoute(sfx, chorus(q), 1);
+    const qc = chorus(q);
+    ajoute(sfx, qc, 1);
+    ajoute(envoiSfx, qc, 0.8);
   }
 }
-if (T_LOGO !== null) scintillementLogo(sfx, T_LOGO, D_LOGO);
-ajoute(sfx, reverb(sfx, { piece: 0.9, amorti: 0.4, predelai: 0.03 }), 0.6);
+// effets demandés plan par plan dans le montage
+for (const p of plans) {
+  const k = plans.indexOf(p);
+  for (const e of p.son ?? []) {
+    const t0 = (p.debut + (e.a ?? 0)) / fps;
+    const d = (e.duree ?? 30) / fps;
+    if (e.type === "montee") montee(sfx, t0, d, k);
+    if (e.type === "arpege" || e.type === "impulsions") impulsions(sfx, t0, d, k, e.ecart ?? null, e.nombre ?? 5);
+    if (e.type === "souffle") souffleInverse(sfx, t0 + d, d, 0.7, Math.min(k + 1, NS - 1));
+    if (e.type === "whoosh") whoosh(sfx, t0, d, 0.6, k % 2 ? -1 : 1);
+    if (e.type === "impact") coupGrave(sfx, t0, 0.9);
+    if (e.type === "ping") {
+      ping(sfx, t0, 0.8);
+      ping(envoiSfx, t0, 0.25);
+    }
+  }
+}
+if (T_LOGO !== null) {
+  whoosh(sfx, T_LOGO - 0.2, D_LOGO + 0.3, 0.6, -1);
+  ping(envoiSfx, T_LOGO + D_LOGO * 0.92, 1);
+}
+ajoute(envoiSfx, sfx, 0.35);
 
-// 4. mastering : niveau (RMS -18 dBFS sur la partie musicale, comme les références),
-//    aigus adoucis (références sombres au-dessus de 8 kHz), limiteur doux (crêtes ≤ -4 dBFS).
+// 3. réverbérations (une grande salle pour la musique, une plus longue pour les effets)
+if (!SFX_SEULS) ajoute(musique, salle(envoi, { rt60: 2.8, coupure: 5200, predelai: 0.02 }), R.reverb);
+ajoute(sfx, salle(envoiSfx, { rt60: 4.2, coupure: 4200, predelai: 0.03, taille: 1.3 }), 0.8);
+
+// 4. la musique s'arrête à la révélation
+if (T_REV !== null && !SFX_SEULS) {
+  const n0 = Math.round(T_REV * SR);
+  if (mus.revelation === "filtre") {
+    const lp = [new SVF(), new SVF()];
+    for (let n = n0; n < N; n++) {
+      const tn = (n - n0) / SR;
+      const fc = expInterp(3000, 140, borne(tn / 0.35));
+      const g = Math.exp(-tn / 0.8);
+      for (let c = 0; c < 2; c++) musique[c][n] = lp[c].run(musique[c][n], fc, 0.7) * g;
+    }
+  } else {
+    // arrêt net : on garde seulement la queue de réverbération, filtrée, qui retombe vite
+    const lp = [new SVF(), new SVF()];
+    for (let n = n0; n < N; n++) {
+      const tn = (n - n0) / SR;
+      const g = Math.exp(-tn / 0.35) * 0.6;
+      for (let c = 0; c < 2; c++) musique[c][n] = lp[c].run(musique[c][n], 900, 0.7) * g;
+    }
+  }
+}
+
+// 5. mastering : compression douce de bus, niveau (RMS -16 dBFS sur la partie musicale),
+//    aigus adoucis sans étouffer, limiteur (crêtes ≤ -1 dBFS).
 const mix = tampon();
 ajoute(mix, musique, 1);
-ajoute(mix, sfx, 1);
+ajoute(mix, sfx, SFX_SEULS ? 1 : R.sfx);
 const nMus = Math.round((T_REV ?? DUREE) * SR);
-let somme = 0;
-for (let n = 0; n < nMus; n++) somme += (mix[0][n] ** 2 + mix[1][n] ** 2) / 2;
-let creteAvant = 0;
-for (let c = 0; c < 2; c++) for (let n = 0; n < N; n++) creteAvant = Math.max(creteAvant, Math.abs(mix[c][n]));
-const rmsAvant = Math.sqrt(somme / nMus) || 1;
-const gain = SFX_SEULS ? (Math.pow(10, -6 / 20) / (creteAvant || 1)) * mus.volume : (Math.pow(10, -18 / 20) / rmsAvant) * mus.volume;
-const SEUIL = 0.45;
-const PLAFOND = Math.pow(10, -4 / 20);
+const rms = (x) => {
+  let s = 0;
+  for (let n = 0; n < nMus; n++) s += (x[0][n] ** 2 + x[1][n] ** 2) / 2;
+  return Math.sqrt(s / nMus) || 1e-9;
+};
+const gainEntree = Math.pow(10, -16 / 20) / rms(mix);
+// compresseur de bus (2:1 au-dessus de -20 dBFS, attaque 15 ms, relâche 180 ms) : colle les couches ensemble
+{
+  const seuil = Math.pow(10, -14 / 20);
+  const att = Math.exp(-1 / (0.015 * SR));
+  const rel = Math.exp(-1 / (0.18 * SR));
+  let envC = 0;
+  for (let n = 0; n < N; n++) {
+    const l = mix[0][n] * gainEntree;
+    const r = mix[1][n] * gainEntree;
+    const niveau = Math.max(Math.abs(l), Math.abs(r));
+    envC = niveau > envC ? att * envC + (1 - att) * niveau : rel * envC + (1 - rel) * niveau;
+    const g = envC > seuil ? Math.pow(envC / seuil, 1 / 1.6 - 1) : 1;
+    mix[0][n] = l * g;
+    mix[1][n] = r * g;
+  }
+}
+const gainSortie = (SFX_SEULS ? Math.pow(10, -18 / 20) : Math.pow(10, -16 / 20)) / rms(mix) * mus.volume;
+const PLAFOND = Math.pow(10, -1 / 20);
+const SEUIL = PLAFOND * 0.7;
 const limite = (x) => {
   const a = Math.abs(x);
   return a <= SEUIL ? x : Math.sign(x) * (SEUIL + (PLAFOND - SEUIL) * Math.tanh((a - SEUIL) / (PLAFOND - SEUIL)));
 };
 const doux = [new SVF(), new SVF()];
+const dc = [0, 0];
 const fonduFin = Math.round(0.4 * SR);
 let crete = 0;
 for (let c = 0; c < 2; c++)
   for (let n = 0; n < N; n++) {
-    let s = limite(doux[c].run(mix[c][n] * gain, 8500, 0.6));
+    let x = mix[c][n] * gainSortie;
+    dc[c] = dc[c] * 0.9995 + x * 0.0005; // pas de composante continue
+    x -= dc[c];
+    let s = limite(doux[c].run(x, 12500, 0.6));
     if (n > N - fonduFin) s *= (N - n) / fonduFin;
     if (n < 64) s *= n / 64;
     mix[c][n] = s;
     crete = Math.max(crete, Math.abs(s));
   }
-somme = 0;
-for (let n = 0; n < nMus; n++) somme += (mix[0][n] ** 2 + mix[1][n] ** 2) / 2;
-console.log(`Crête ${(20 * Math.log10(crete)).toFixed(1)} dBFS · RMS (partie musicale) ${(10 * Math.log10(somme / nMus)).toFixed(1)} dBFS`);
+console.log(`Crête ${(20 * Math.log10(crete)).toFixed(1)} dBFS · RMS (partie musicale) ${(20 * Math.log10(rms(mix))).toFixed(1)} dBFS`);
 
-// 5. écriture WAV 16 bits stéréo
+// 6. écriture WAV 16 bits stéréo
 const octets = N * 4;
 const wav = Buffer.alloc(44 + octets);
 wav.write("RIFF", 0);

@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : une UI SaaS sombre filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, accents néon qui brillent, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière (sans logo par défaut), musique électronique sombre originale et effets sonores calés à l'image. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -34,7 +34,7 @@ Parle à l'utilisateur dans sa langue. Le texte de l'interface suit la langue du
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
 | **Rythme interne** | Il se passe quelque chose **dès la coupe** : les animations du plan sont pré-lancées (horloges négatives, ex. `-6`), le sujet est déjà là · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Un plan qui commence vide (0,3–0,6 s sans rien) casse la dynamique |
 | **Fin** | **Pas de logo par défaut** (choix de l'utilisateur). `recul` : l'UI entière à plat (50–64 % de la largeur) qui respire ~2,5 s puis s'éteint ; ou `barre` (gros plan ⌘K/cloche/bouton qui s'éteint) ; ou `aucune`. Le logo tracé à la comète bleue (V1–V4) reste disponible avec `"logo": true`, seulement si on le demande | V2, V3 = recul ; V1, V4 = barre ; V5 = aucune |
-| **Son** | Musique originale sur **un seul accord** (bourdon sur la tonique, sub profond 30–60 Hz, nappe large, motif en doubles-croches ~92 BPM). L'**arrangement monte plan après plan** (caisse douce au 2e plan, scintillement au 4e, filtre qui s'ouvre). 2–3 effets **musicaux** calés à l'image (montée tonale, arpège qui monte avec les barres, souffle). À la révélation : souffle inversé → la musique s'arrête net → impact grave → traîne → silence. Son sombre (rien de brillant au-dessus de 8 kHz), stéréo large, aucun clic d'UI ni bruit aux coupes | Mesuré sur les 5 références : voir `references/recette-son.md` |
+| **Son** | **Il colle au montage** : chaque plan = une mesure dont le 1er temps tombe sur la coupe, l'accord change sur la coupe (souffle inversé + coup grave). Palette de **musique de film électronique** : sub, basse pulsée filtrée, nappe sombre, arpège grave et doux, batterie feutrée qui entre plan après plan. **Jamais de son pincé, de clochette ni d'arpège clair** (entendus comme harpe, jeu vidéo, musique pour enfants). Effets de cinéma : ping sonar à l'ouverture, grondement qui monte, puis à la révélation la musique s'arrête : explosion sourde, whoosh, battements, silence. Volume presque constant (+3 dB du 1er au dernier plan) | Écouté et mesuré sur les 5 références (YAMNet) : voir `references/recette-son.md` |
 
 ## Workflow
 
@@ -99,7 +99,7 @@ Un plan :
     "rotation": { "de": -19, "a": -21 },
     "nettete": { "demiLargeur": 7, "fondu": 20 }
   },
-  "son": [{ "type": "montee", "a": 2, "duree": 34 }]
+  "son": [{ "type": "montee", "a": 2, "duree": 30 }]
 }
 ```
 - `horloges` : les blocs qui s'animent dans ce plan (valeur = décalage en images). Mets une valeur **négative** (-6 ; -12 pour la barre du haut) pour que l'animation soit déjà lancée à la coupe : jamais de début de plan vide.
@@ -124,7 +124,7 @@ Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera`) ou `aucune` ; `logo` vau
 ```bash
 node scripts/bande-son.mjs            # après CHAQUE modification de montage.json
 ```
-Lis `references/recette-son.md` pour placer les effets (`montee` pendant une courbe qui se trace, `arpege` pendant des barres qui poussent, `souffle` avant une coupe forte) et régler la musique (`bpm`, `tonique`, `mode`, `style` pulse/nappe, `revelation`). Garde peu d'effets : les références n'ont aucun clic d'interface. Musique du client : `--sfx-seuls`.
+Le script place tout seul le ping d'ouverture, les accents de coupe et la révélation, et cale la musique sur les coupes. Toi, tu ajoutes au plus 1 à 2 effets **calés sur l'horloge de l'animation** : `montee` pendant une courbe qui se trace, `impulsions` (une note par barre : `ecart`, `nombre`) quand des barres poussent, `whoosh` quand un élément traverse. Lis `references/recette-son.md` (types d'effets, réglages `tonique`, `mode`, `style` pulse/nappe, `revelation`). Ne remplace jamais un son par un son pincé, une cloche ou un arpège clair. Musique du client : `--sfx-seuls`.
 
 ### 6. Vérifier (ne pas sauter)
 
@@ -134,6 +134,7 @@ REMOTION_CONCURRENCY=4 npx remotion render DashboardFilm out/brouillon.mp4 --sca
 node scripts/planche.mjs out/brouillon.mp4 --pas 0.5
 node scripts/planche.mjs out/brouillon.mp4 --ref <reference.mp4> --pas 0.75    # si une référence existe
 node scripts/controle.mjs out/brouillon.mp4     # fluidité : images ratées, plongées au noir, arrêts (doit dire « aucun problème »)
+python3 scripts/ecoute.py public/audio/bande-son.wav   # si Python + TensorFlow sont là : doit dire « Le son colle au style »
 ```
 Lis la planche et vérifie :
 - [ ] Chaque plan montre **un seul** composant, qui remplit l'image et reste lisible dans la bande nette
@@ -145,7 +146,7 @@ Lis la planche et vérifie :
 - [ ] Les animations sont finies vers l'image 60 du plan ; rien n'apparaît d'un coup
 - [ ] Le recul montre l'UI entière, propre et cohérente (mêmes chiffres que dans les gros plans)
 - [ ] Fin : le recul respire puis s'éteint proprement (et, seulement si `logo: true`, le logo se trace au centre)
-- [ ] Son : l'arrangement monte à chaque plan, les effets tombent sur l'image (montée/arpège = croissance, souffle → coupe), la musique s'arrête net à la révélation, aucun clic, silence à la fin
+- [ ] Son : chaque coupe est marquée (changement d'accord + coup grave), l'arrangement s'épaissit à chaque plan sans que le 1er plan soit trop faible, les effets tombent sur l'animation (courbe = montée, barres = une note chacune), la révélation est le moment le plus fort (explosion sourde, whoosh), puis silence. Rien de pincé ni de « ding » (`ecoute.py` le vérifie)
 
 Pour une image précise : `npx remotion still DashboardFilm out/img.png --frame=245`. Corrige, puis relance. Deux ou trois passes sont normales.
 

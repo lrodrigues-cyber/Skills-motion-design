@@ -142,6 +142,25 @@ Chaque vidéo a **sa propre musique**, mais toutes suivent la même grammaire. L
 | **Scintillement du logo** | V2 15,1–15,4 s | Souffle aérien qui monte (jusqu'à ~2 kHz) pendant le tracé |
 | **Écho final** | V4 18–21,5 s | L'arpège continue tout bas, filtré, et s'éteint |
 
+### Écoute automatique (YAMNet, octobre 2026)
+
+Les mesures ci-dessus (spectre, niveaux, accords) ne suffisaient pas : une première bande-son qui les respectait toutes a été jugée « qui ne colle pas du tout ». Le modèle YAMNet (Google, 521 classes de sons AudioSet) a montré pourquoi, en écoutant les références et notre piste fenêtre par fenêtre :
+
+| Piste | Ce que le modèle entend |
+|---|---|
+| V1 | Musique de film : *Theme, Sad, Scary, Soundtrack music* |
+| V2 | *Scary, Ambient, New-age music, Synthesizer* ; à la révélation *Whoosh 0,52, Arrow, Sigh* |
+| V3 | *Ambient, Soundtrack* ; ouverture *Sonar* ; 11–14,4 s *Rumble, Throbbing, Vehicle, Aircraft* (grondement qui monte) ; révélation *Whoosh 0,30 → Explosion 0,20 → Timpani → Heartbeat* |
+| V4 | *Electronic music, Electronica, Techno, Trance, Synthesizer* ; fin *Effects unit, Distortion* (arrêt de bande) |
+| V5 | *Exciting, Theme, Soundtrack music* |
+| Ancienne bande-son (rejetée) | *Harp, Pizzicato, Harpsichord, Video game music* ; à la révélation *Ding, Music for children* |
+
+Conclusions appliquées dans `scripts/bande-son.mjs` :
+- **Aucun son pincé ni cloche** : un arpège clair et rapide est lu comme une harpe ou une musique de jeu vidéo. L'arpège est grave, sombre, peu résonant, et la pulsation vient surtout de la basse filtrée.
+- **Les effets se concentrent sur la révélation**, dans l'ordre de V3 : grondement qui monte (lu comme un moteur qui approche), whoosh, explosion sourde, timbale, battement de cœur. Ouverture sur un ping de sonar.
+- **Niveau presque constant** d'un plan à l'autre (écart ≤ 3–4 dB) : la tension vient de l'arrangement, pas du volume.
+- Similarité d'empreinte (cosinus) entre une référence et la moyenne des 4 autres : 0,65–0,85. Bande-son d'exemple actuelle : 0,875. Ancienne : 0,69. `scripts/ecoute.py` refait ce contrôle sur n'importe quelle piste.
+
 ### Son : vidéo par vidéo
 - **V1** : pad tenu fa mineur + sub ; glissando 3,3–5,6 s pendant les barres ; changements d'accord ~toutes les 2 s ; à 15,75 s (logo), la musique tonale cesse → grondement grave bruité qui décroît jusqu'à 19 s ; fondu au silence.
 - **V2** : très sombre (centroïde 200–460 Hz), nappe dense pulsée ; à 12,67 s (recul), filtre fermé d'un coup et baisse de niveau ; 15,1–15,4 s souffle du logo ; silence à 18,5 s.
