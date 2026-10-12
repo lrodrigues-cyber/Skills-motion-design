@@ -7,9 +7,9 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 [Installation](docs/installation.md) · [Utilisation](docs/utilisation.md) · [Modèles de prompts](docs/prompts.md) · [Dépannage](docs/depannage.md) · [Nouveautés](CHANGELOG.md)
 
-<img src="docs/media/apercu.webp" alt="Aperçu animé du style Dashboard cinématique : une interface SaaS sombre filmée en gros plan sur un plan 3D incliné" width="100%">
+<img src="docs/media/apercu.webp" alt="Aperçu animé du style Dashboard cinématique : une interface SaaS filmée en gros plan sur un plan 3D incliné" width="100%">
 
-<sub>Film d'exemple généré par le skill <code>dashboard-cinematique</code>, sans retouche (marque et données fictives).<br>
+<sub>Film d'exemple généré par le skill <code>dashboard-cinematique</code>, sans retouche (marque et données fictives, interface sombre d'exemple).<br>
 <a href="docs/media/exemple.mp4"><b>Voir la vidéo complète avec le son</b></a> · MP4 1080p · 19 s</sub>
 
 </div>
@@ -20,13 +20,13 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 | Skill | Style | Idéal pour | Version |
 |---|---|---|---|
-| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | Interface SaaS sombre filmée en macro sur un plan 3D incliné, profondeur de champ courte, accents néon, plans de 3 s en coupe franche, recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.3.0 |
+| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en macro sur un plan 3D incliné : profondeur de champ courte, plans de 3 s en coupe franche, recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.4.0 |
 
 D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
 ## Ce que vous obtenez
 
-Vous décrivez votre produit et vous joignez des captures de votre interface. Claude reconstruit l'interface en code, la filme comme un objet et livre :
+Vous décrivez votre produit et vous joignez une capture de votre interface. Claude reconstruit l'interface en code **à l'identique** (il mesure la capture au pixel, puis compare automatiquement sa reconstruction à l'original jusqu'à ce qu'elles correspondent), la filme comme un objet et livre :
 
 - **une vidéo MP4** en 1920×1080, 30 images/s, d'environ 20 s (4K en option) ;
 - **5 plans rapprochés de 3 s**, un élément de l'interface par plan (chiffre clé, courbe, alerte, graphique, bouton), puis un **recul** sur le tableau de bord complet ;

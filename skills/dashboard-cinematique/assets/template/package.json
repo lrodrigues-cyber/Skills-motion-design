@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio",
-    "brouillon": "remotion render DashboardFilm out/brouillon.mp4 --scale=0.5 --crf=20 --x264-preset=veryfast --muted",
+    "capture": "node scripts/capture.mjs",
+    "fidelite": "node scripts/fidelite.mjs",
+    "brouillon": "remotion render DashboardFilmMuet out/brouillon.mp4 --scale=0.5 --crf=20 --x264-preset=veryfast --muted",
     "reperage": "node scripts/reperage.mjs out/brouillon.mp4",
     "son": "node scripts/bande-son.mjs",
     "sonorise": "node scripts/sonorise.mjs out/brouillon.mp4",
@@ -19,6 +21,7 @@
     "@remotion/fonts": "4.0.529",
     "@remotion/noise": "4.0.529",
     "@remotion/paths": "4.0.529",
+    "lucide-react": "1.47.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "remotion": "4.0.529"

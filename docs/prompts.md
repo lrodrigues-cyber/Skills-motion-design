@@ -42,8 +42,9 @@ PRODUIT
 - Langue de l'interface : [français / anglais]
 
 INTERFACE
-- Source : [captures jointes / code du dépôt : chemin vers la page / URL publique]
-- Couleurs d'accent : [ex. violet #7C3AED et cyan #22D3EE, ou « libre »]
+- Source : [capture jointe de la page entière / code du dépôt : chemin vers la page]
+- Reprends exactement mon interface : mêmes couleurs, mêmes modules, mêmes textes,
+  mêmes icônes et logos. Ne change ni le thème ni les couleurs.
 
 LES 5 PLANS (un seul élément par plan, dans cet ordre)
 1. [Ouverture : ex. l'en-tête et la carte « Revenu mensuel : 128 400 € »]
@@ -76,7 +77,8 @@ Quand vous voulez un premier résultat sans tout préparer. Claude choisit les p
 
 ```text
 Avec le skill dashboard-cinematique, fais une vidéo de mon dashboard à partir
-des captures jointes. Choisis toi-même les 5 plans les plus forts, garde mes vrais
+de la capture jointe, en reprenant exactement mon interface (couleurs, modules,
+textes, icônes). Choisis toi-même les 5 plans les plus forts, garde mes vrais
 chiffres et pas de logo à la fin. Montre-moi un brouillon avant le rendu final.
 ```
 
@@ -108,7 +110,7 @@ et rends le film de démonstration en qualité brouillon.
 
 ## 5. Avec des vidéos de référence
 
-Pour rapprocher le résultat d'une vidéo que vous aimez, à condition qu'elle reste proche du style (interface sombre filmée en gros plan).
+Pour rapprocher le résultat d'une vidéo que vous aimez, à condition qu'elle reste proche du style (interface filmée en gros plan sur un plan incliné).
 
 ```text
 Avec le skill dashboard-cinematique, voici [2] vidéos de référence du rendu que je veux.
@@ -150,7 +152,8 @@ Formulations qui fonctionnent bien :
 | Changer l'ordre | « Inverse les plans 2 et 4. » |
 | Recadrer | « Le plan 2 est trop serré : recule un peu la caméra pour garder toute la courbe dans la zone nette. » |
 | Corriger une donnée | « Le revenu mensuel est de 142 900 €, pas 128 400 €. Corrige-le aussi dans le recul. » |
-| Couleurs de marque | « Utilise nos couleurs : violet #7C3AED en accent principal, cyan #22D3EE en secondaire. » |
+| Fidélité | « Le bouton n'est pas exactement celui de ma capture : compare à nouveau la reconstruction à la capture et corrige. » |
+| Couleurs (si vous voulez vraiment en changer) | « Change la couleur du bouton principal en violet #7C3AED, seulement dans la vidéo. » |
 | Langue | « Passe tous les libellés de l'interface en anglais. » |
 | Fin | « Termine par un gros plan sur la barre du haut au lieu du recul. » |
 | Logo | « Ajoute notre logo à la fin (SVG joint), tracé à la comète. » |
@@ -181,7 +184,7 @@ Formulations qui fonctionnent bien :
 | Réseaux sociaux | « Fais une version sans musique, avec les effets sonores seuls, pour TikTok et Reels. » |
 | Fichier léger | « Fais une copie compressée sous 20 Mo pour l'envoyer par e-mail. » |
 | Récapitulatif | « Donne-moi la liste des plans avec leurs temps, et ce qui est fictif dans la vidéo. » |
-| Variante | « Fais une deuxième version avec un accent orange et une fin sans recul. » |
+| Variante | « Fais une deuxième version avec d'autres modules et une fin sans recul. » |
 
 ## 9. Écrire un bon prompt
 
@@ -191,3 +194,4 @@ Formulations qui fonctionnent bien :
 4. **Demandez toujours un brouillon d'abord.** Le rendu final prend 25 à 35 min : il se lance une fois tout validé.
 5. **Regroupez les retouches** dans un message numéroté plutôt qu'une par une.
 6. **Joignez les fichiers dans le même message** que la demande : captures, logo, musique.
+7. **Une capture de la page entière, telle quelle.** Pas de recadrage, pas de redimensionnement, pas de capture de capture : c'est la référence au pixel près.

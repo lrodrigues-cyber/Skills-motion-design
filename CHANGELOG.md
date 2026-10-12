@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.4.0 (12 octobre 2026)
+
+L'interface du client est reproduite à l'identique : c'est désormais la règle n° 1 du skill.
+
+- **Règle de fidélité** : même thème (clair ou sombre), mêmes couleurs, mêmes modules, textes, icônes, logos et favicons que la capture. Rien d'ajouté, rien de recoloré, aucun composant remplacé. Le style vient de la caméra, de la mise au point, de la lumière d'ensemble et du mouvement. Cause corrigée : la recette imposait la palette sombre et les composants de l'exemple, ce qui transformait une interface claire en interface sombre néon.
+- **Nouveau `scripts/capture.mjs`** : lit la capture avant de la reconstruire (`infos` : taille, thème, palette exacte ; `profil` : bords et couleurs le long d'une ligne ; `pipette` ; `grille` : image quadrillée agrandie pour mesurer ; `decoupe` : logos, favicons, photos à poser tels quels).
+- **Nouveau `scripts/fidelite.mjs`** et composition `MondeAPlat` : rend l'interface reconstruite dans son état final et la compare à la capture (ressemblance, SSIM, zones en écart numérotées, couleurs attendues, images agrandies). Le brouillon ne se lance qu'une fois le contrôle passé.
+- **Thème clair** : `"theme": "clair"` dans `montage.json` adoucit l'ombre de profondeur et le vignettage, et adapte le repérage du son (aplats et encre qui apparaissent au lieu de lumière qui s'allume).
+- **Icônes Lucide** incluses (`lucide-react`), utilisées par la plupart des tableaux de bord Tailwind et shadcn.
+- Nouvelle fiche `references/fidelite.md` : méthode de mesure, reconstruction, contrôle et animation fidèle, avec l'exemple chiffré d'une interface claire reconstruite à 99,5 %.
+- `npm run brouillon` rend la composition muette (le brouillon ne dépend plus de la bande-son) ; la fin « barre » prend ses `horloges` dans `montage.json`.
+
 ## dashboard-cinematique 1.3.0 (12 octobre 2026)
 
 Nouveau profil sonore « dynamique », d'après deux vidéos fournies par l'utilisateur, devenu le profil par défaut.

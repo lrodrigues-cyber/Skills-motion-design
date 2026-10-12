@@ -3,10 +3,10 @@
 //
 //   node scripts/reperage.mjs out/brouillon.mp4          → src/film/reperage.json
 //
-// Le script regarde la vidéo comme un monteur son : à chaque image, il mesure la lumière qui
-// APPARAÎT (accents néon qui s'allument, barres qui poussent, courbe qui se trace, texte qui
-// arrive). Chaque bouffée de lumière devient un « événement » : image de départ, pic, fin, force,
-// et sa courbe exacte. scripts/bande-son.mjs place un effet sur chaque événement et lui donne
+// Le script regarde la vidéo comme un monteur son : à chaque image, il mesure ce qui APPARAÎT
+// (accents néon qui s'allument, barres qui poussent, courbe qui se trace, texte qui arrive ;
+// sur une interface claire : aplats de couleur et encre qui arrivent). Chaque bouffée devient un
+// « événement » : image de départ, pic, fin, force, et sa courbe exacte. scripts/bande-son.mjs place un effet sur chaque événement et lui donne
 // la même enveloppe que l'animation (attaque franche, puis décroissance comme l'ease-out).
 //
 // À relancer après toute modification de l'interface ou du montage (bande-son.mjs le signale).
@@ -55,10 +55,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   });
   const n = Math.floor(brut.length / (L * H * 3));
 
-  // Énergie lumineuse par image : accents saturés (néon) + texte clair (pondéré moins fort).
+  // Énergie par image : ce qui APPARAÎT à l'écran.
+  //  - interface sombre : accents saturés qui s'allument (néon) + texte clair (pondéré moins fort) ;
+  //  - interface claire (montage.theme = "clair") : aplats de couleur + encre (texte, traits) sur le fond clair.
+  const clair = M.theme === "clair";
   const energie = new Float64Array(n);
   for (let i = 0; i < n; i++) {
-    let neon = 0,
+    let couleur = 0,
       texte = 0;
     const o = i * L * H * 3;
     for (let k = 0; k < L * H; k++) {
@@ -67,10 +70,13 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         b = brut[o + 3 * k + 2] / 255;
       const mx = Math.max(r, g, b);
       const sat = (mx - Math.min(r, g, b)) / (mx + 1e-6);
-      if (sat > 0.35 && mx > 0.25) neon += mx;
+      if (clair) {
+        if (sat > 0.3 && mx > 0.2) couleur += sat;
+        else if (sat < 0.3 && mx < 0.55 && mx > 0.08) texte += 1 - mx;
+      } else if (sat > 0.35 && mx > 0.25) couleur += mx;
       else if (sat < 0.3 && mx > 0.35) texte += mx;
     }
-    energie[i] = neon + 0.35 * texte;
+    energie[i] = couleur + 0.35 * texte;
   }
 
   // Mouvement LOCAL par case de 10×10 px (gris) : ce qui bouge en plus de la caméra

@@ -42,6 +42,8 @@ if (!options.includes("--sans-installation")) {
 console.log(`
 Prêt. Ensuite :
   cd ${path.relative(process.cwd(), dossier) || "."}
+  npm run capture -- infos capture/ecran.png            # lire la capture du client (taille, thème, palette)
+  npm run fidelite -- capture/ecran.png                 # l'interface reconstruite est-elle identique à la capture ?
   npx remotion studio                                   # aperçu en direct
   npm run brouillon                                     # brouillon muet, demi-résolution (~6 min)
   npm run reperage && npm run son && npm run sonorise   # effets calés sur les animations → out/brouillon-son.mp4

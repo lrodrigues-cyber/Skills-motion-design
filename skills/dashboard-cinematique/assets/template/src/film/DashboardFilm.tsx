@@ -36,10 +36,25 @@ type Fin = {
   total: number;
   logoTaille: number;
   camera?: Plan["camera"];
+  /** Fin « barre » : blocs qui s'animent pendant la fin (même règle que les plans). */
+  horloges?: Partial<Record<Bloc, number>>;
 };
 
 const PLANS = montage.plans as unknown as Plan[];
 const FIN = montage.fin as unknown as Fin;
+/**
+ * Thème de l'interface du client, à reprendre de sa capture (scripts/capture.mjs infos le donne) :
+ * "sombre" (défaut) ou "clair". Il règle l'ombre de profondeur et le vignettage, jamais les couleurs de l'interface.
+ */
+const CLAIR = (montage as { theme?: string }).theme === "clair";
+const OMBRE = CLAIR ? 0.5 : 1;
+
+/** Horloges d'un plan : images écoulées depuis le début de l'animation de chaque bloc. */
+const horloges = (h: Partial<Record<Bloc, number>> | undefined, frame: number) => {
+  const r: Partial<Record<Bloc, number>> = {};
+  for (const [bloc, decalage] of Object.entries(h ?? {})) r[bloc as Bloc] = frame - (decalage ?? 0);
+  return r;
+};
 
 /** Début de chaque plan (en images) : les plans s'enchaînent en coupe franche. */
 export const DEBUTS = PLANS.reduce<number[]>((acc, p, i) => [...acc, i === 0 ? 0 : acc[i - 1] + PLANS[i - 1].duree], []);
@@ -78,7 +93,7 @@ export const DashboardFilm: React.FC<{ avecSon?: boolean }> = ({ avecSon = true 
       </Sequence>
     )}
 
-    <Etalonnage />
+    <Etalonnage vignette={CLAIR ? 0.45 : 0.7} />
     {avecSon && <Html5Audio src={staticFile("audio/bande-son.wav")} />}
   </AbsoluteFill>
 );
@@ -89,8 +104,8 @@ const FinBarre: React.FC = () => {
   const extinction = 1 - prog(frame, FIN.extinctionDebut, FIN.extinctionDuree, ease.doux);
   return (
     <AbsoluteFill style={{ opacity: extinction }}>
-      <Plateau monde={MONDE} duree={FIN.total} {...(FIN.camera ?? PLANS[PLANS.length - 1].camera)}>
-        <Dashboard horloges={{ haute: frame }} marque={montage.marque} />
+      <Plateau monde={MONDE} duree={FIN.total} ombre={OMBRE} {...(FIN.camera ?? PLANS[PLANS.length - 1].camera)}>
+        <Dashboard horloges={horloges(FIN.horloges, frame)} marque={montage.marque} />
       </Plateau>
     </AbsoluteFill>
   );
@@ -99,11 +114,9 @@ const FinBarre: React.FC = () => {
 /** Un plan rapproché : le monde entier, filmé par le Plateau ; seuls les blocs du plan s'animent. */
 const Horloge: React.FC<{ plan: Plan }> = ({ plan }) => {
   const frame = useCurrentFrame();
-  const h: Partial<Record<Bloc, number>> = {};
-  for (const [bloc, decalage] of Object.entries(plan.horloges)) h[bloc as Bloc] = frame - (decalage ?? 0);
   return (
-    <Plateau monde={MONDE} duree={plan.duree} {...plan.camera}>
-      <Dashboard horloges={h} marque={montage.marque} />
+    <Plateau monde={MONDE} duree={plan.duree} ombre={OMBRE} {...plan.camera}>
+      <Dashboard horloges={horloges(plan.horloges, frame)} marque={montage.marque} />
     </Plateau>
   );
 };

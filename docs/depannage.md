@@ -109,6 +109,18 @@ Le bac à sable de claude.ai limite la durée d'exécution. Demandez un rendu en
 ## Image
 
 <details>
+<summary><b>La vidéo ne reprend pas exactement mon interface (couleurs, modules, thème)</b></summary>
+
+Depuis la version 1.4.0, la règle n° 1 du skill est de reproduire la capture à l'identique, et un contrôle automatique compare la reconstruction à la capture avant tout rendu. Si un écart subsiste :
+
+- Vérifiez que la capture est la page entière, en pleine résolution, sans recadrage ni redimensionnement.
+- Mettez à jour le skill (version 1.4.0 ou plus récente) : les versions précédentes adaptaient l'interface à un style sombre.
+
+À dire à Claude : *« L'interface de la vidéo n'est pas identique à ma capture ([ce qui diffère]). Relance le contrôle de fidélité sur la capture, montre-moi la comparaison et corrige jusqu'à ce qu'il passe. »*
+
+</details>
+
+<details>
 <summary><b>Le texte est flou ou pixelisé en gros plan</b></summary>
 
 - Vérifiez que vous regardez le rendu final et non un brouillon : les brouillons sont rendus en demi-résolution.

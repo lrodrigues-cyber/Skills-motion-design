@@ -28,6 +28,7 @@ Le skill apporte à Claude quatre choses :
 | **La recette du style** | Les règles relevées sur des vidéos de référence : cadrages testés, durée des plans, lumière, couleurs, rythme, son |
 | **Un gabarit Remotion complet** | Interface d'exemple, caméra 3D, profondeur de champ, éclairage, fin, film d'exemple prêt à rendre |
 | **Un générateur de bande-son** | Musique originale et effets sonores calculés à partir du montage, sans aucun fichier audio externe |
+| **Des outils de fidélité** | Mesure de votre capture (couleurs exactes, bords, textes), puis comparaison automatique de la reconstruction avec l'original, zone par zone |
 | **Des outils de contrôle** | Planche-contact des images, détection automatique des images ratées, des coupes saccadées et des plans figés |
 
 ## 2. Ce qu'il faut préparer
@@ -36,13 +37,12 @@ Plus le brief est précis, moins il faut de retouches. Avant d'écrire votre dem
 
 **Indispensable**
 
-- [ ] **L'interface** : des captures d'écran nettes, en pleine résolution (PNG de préférence), une par écran. Le thème sombre est idéal ; à défaut, Claude adapte les couleurs. Si vous travaillez dans Claude Code sur le dépôt de l'application, le chemin vers les fichiers de la page suffit.
+- [ ] **L'interface** : une capture d'écran nette de la page entière, en pleine résolution (PNG, sans recadrage ni redimensionnement). **La vidéo reprend exactement cette capture** : thème clair ou sombre, couleurs, modules, textes, icônes et logos. Si vous travaillez dans Claude Code sur le dépôt de l'application, le chemin vers les fichiers de la page suffit.
 - [ ] **Les 5 moments à montrer**, un élément par moment. Exemples : la carte « Revenu mensuel », la courbe des inscriptions, l'alerte de quota, le graphique gains/pertes, le bouton « Créer un rapport ».
 - [ ] **Les données à afficher** : les vrais chiffres et libellés, ou la mention « données d'exemple ». Claude n'invente jamais un chiffre présenté comme réel. Sans données, il utilise des valeurs d'exemple crédibles et le signale à la livraison.
 
 **Facultatif**
 
-- [ ] **Les couleurs de marque** : 1 à 3 couleurs d'accent, en hexadécimal. Le reste de l'interface reste sombre et neutre.
 - [ ] **Le logo**, seulement si vous voulez un logo à la fin (désactivé par défaut). Un SVG en trait continu donne le meilleur résultat, parce qu'il est tracé à l'écran par une comète lumineuse.
 - [ ] **Votre musique**, si vous ne voulez pas de la musique générée. Le skill produit alors uniquement les effets sonores, calés sur votre morceau.
 - [ ] **L'usage prévu** : site web, publicité, LinkedIn, salon, réseaux sociaux. Cela oriente la qualité de livraison et les versions proposées.
@@ -54,7 +54,7 @@ Plus le brief est précis, moins il faut de retouches. Avant d'écrire votre dem
 | 1. Brief | Vous | Vous envoyez votre demande ([modèles](prompts.md)) avec les captures | 5 min |
 | 2. Questions | Claude | Au plus 2 ou 3 questions, seulement sur ce qu'il ne peut pas deviner (données, plans). Il ne vous demande pas de choix créatifs : la recette s'en charge | 1 min |
 | 3. Création du projet | Claude | Copie du gabarit, installation de Remotion | 1 à 3 min |
-| 4. Reconstruction de l'interface | Claude | Votre tableau de bord est recréé en code, à taille réelle | 5 à 15 min |
+| 4. Reconstruction de l'interface | Claude | Votre tableau de bord est recréé en code à l'identique, à la taille de la capture, puis comparé automatiquement à la capture jusqu'à correspondre (couleurs, positions, textes) | 10 à 25 min |
 | 5. Montage | Claude | Choix des 5 plans, cadrages, rythme | 2 à 5 min |
 | 6. Brouillon, son et contrôle | Claude | Rendu en demi-résolution, repérage automatique des animations à l'image, bande-son calée dessus, planche-contact, contrôle de la fluidité, corrections | 6 à 12 min |
 | 7. Validation | Vous | Vous regardez le brouillon et demandez vos retouches ([prompts de retouche](prompts.md#7-retouches)) | Variable |
@@ -100,7 +100,8 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 |---|---|---|
 | Contenu des plans | N'importe quel élément de votre interface, un par plan | KPI, courbe, alerte, barres, bouton |
 | Ordre des plans | Libre | Du plus calme au plus spectaculaire |
-| Couleurs d'accent | Les vôtres (une couleur par élément lumineux) | Cyan, bleu, rouge, menthe, magenta |
+| Couleurs de l'interface | Celles de votre capture, relevées au pixel (elles ne se changent que si vous le demandez) | Celles de la capture |
+| Thème | Celui de votre capture : clair ou sombre | Celui de la capture |
 | Langue de l'interface | Celle de votre produit | Celle des captures |
 | Fin | Recul sur l'interface entière, gros plan sur la barre du haut, ou pas de fin | Recul |
 | Logo de fin | Tracé à la comète (SVG en trait), ou révélé (logo plein ou image) | Pas de logo |
@@ -112,9 +113,9 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 |---|---|---|
 | Profil sonore | `dynamique` (électro entraînante, drop, effets d'interface denses : tics, bloops, verre) ou `cinema` (musique de film sombre, effets de cinéma) | `dynamique` |
 | Musique | Générée, ou la vôtre (le skill produit alors les effets sonores seuls) | Générée |
-| Tonalité | Do, ré, mi, fa, sol, la, si, avec ou sans altération | Mi |
+| Tonalité | Do, ré, mi, fa, sol, la, si, avec ou sans altération | Si bémol |
 | Mode | Mineur (sombre, tendu) ou majeur (plus lumineux) | Mineur |
-| Style | `pulse` (basse pulsée et batterie électronique feutrée) ou `nappe` (sans batterie, plus planant) | `pulse` |
+| Style (profil cinéma) | `pulse` (basse pulsée et batterie électronique feutrée) ou `nappe` (sans batterie, plus planant) | `pulse` |
 | Révélation | Arrêt net, comme un arrêt de bande, ou filtre qui se ferme | Arrêt net |
 | Effets sonores | Automatiques sur chaque animation repérée à l'image ; en plus, à la demande : whoosh, coup grave, ping | Ping d'ouverture, frappe sur chaque coupe, un effet par animation, révélation |
 | Énergie | Plus ou moins de batterie, de basse, de frappes, d'effets | Percutante dès le 2e plan |
@@ -129,8 +130,9 @@ Ces règles ont été mesurées sur les vidéos de référence. Si vous les cont
 - **Des plans de 3 s.** Plus long, le rythme retombe. Plus court, on n'a pas le temps de lire.
 - **Une caméra qui ne s'arrête jamais.** Chaque coupe se fait en mouvement : c'est ce qui rend le montage fluide.
 - **Jamais de passage par le noir entre deux plans.** Un fondu au noir toutes les 3 s donne une impression de clignotement.
-- **La lumière vient uniquement des accents.** Pas de faisceaux, de rayons ni d'effets de lumière ajoutés : ils font artificiel.
-- **Un son de film, calé sur l'image.** Chaque coupe tombe sur un temps fort. Pas de clics d'interface, pas de son pincé ni de clochette : ils font « jeu vidéo ». Les effets spectaculaires (explosion, whoosh) sont réservés à la révélation.
+- **Votre interface telle qu'elle est.** Mêmes couleurs, mêmes modules, mêmes textes : le style vient de la caméra, de la mise au point et du mouvement, jamais d'une interface redessinée.
+- **Pas de lumière ajoutée.** Pas de faisceaux ni de rayons ; des halos seulement sur une interface sombre dont les accents brillent déjà.
+- **Un son calé sur l'image.** Chaque coupe tombe sur un temps fort et chaque animation a son effet, à l'image près. Pas de sons de jeu vidéo ni de harpe.
 
 ## 7. Bonnes pratiques
 
@@ -157,6 +159,8 @@ Le projet livré est un projet [Remotion](https://www.remotion.dev) standard. De
 | `npm run sonorise` | Pose la bande-son sur le brouillon (`out/brouillon-son.mp4`) pour l'écouter sans refaire le rendu |
 | `npm run render` | Rend le film final dans `out/dashboard-film.mp4` |
 | `node scripts/planche.mjs out/film.mp4` | Crée une planche-contact (`out/planche.png`) pour vérifier le film d'un coup d'œil |
+| `npm run capture -- infos capture/ecran.png` | Lit la capture : taille, thème, palette exacte (aussi `profil`, `pipette`, `grille`, `decoupe`) |
+| `npm run fidelite -- capture/ecran.png` | Compare l'interface reconstruite à la capture : zones en écart, couleurs attendues, images agrandies dans `out/fidelite/` |
 | `node scripts/controle.mjs out/film.mp4` | Contrôle la fluidité : images ratées, plongées au noir, plans figés |
 | `npm run ecoute` | Contrôle le son avec une oreille automatique : ressemblance aux références, sons lus de travers. Facultatif : demande Python et `pip install tensorflow-cpu tf_keras soundfile scipy` |
 
@@ -165,8 +169,9 @@ Les fichiers à connaître :
 | Fichier | Contenu |
 |---|---|
 | `src/film/montage.json` | Le montage : liste des plans, cadrages, effets sonores, fin, réglages de la musique |
-| `src/ui/Dashboard.tsx` | L'interface reconstruite (un tableau de bord de 1600×1000 px) |
-| `src/style/tokens.ts` | Les couleurs : fond, cartes, texte, accents néon |
+| `capture/` | Vos captures d'écran, la référence de la reconstruction |
+| `src/ui/Dashboard.tsx` | L'interface reconstruite, à la taille de la capture |
+| `src/style/tokens.ts` | Les couleurs de l'interface d'exemple (fond, cartes, accents néon) |
 | `public/audio/bande-son.wav` | La bande-son générée |
 
 Un rendu rapide pour vérifier une modification :

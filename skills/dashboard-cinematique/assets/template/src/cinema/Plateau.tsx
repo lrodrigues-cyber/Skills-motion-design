@@ -34,6 +34,11 @@ export type PlateauProps = {
    * puis l'agrandit (×3 à ×5) : texte pixelisé. Par défaut = zoom caméra max (arrondi au-dessus).
    */
   surEchantillonnage?: number;
+  /**
+   * Intensité de l'ombre de profondeur (le lointain et le premier plan qui tombent dans l'ombre) :
+   * 1 pour une interface sombre, ~0,5 pour une interface claire (sinon le blanc vire au gris sale).
+   */
+  ombre?: number;
   /** Rendu du monde ; appelé deux fois (copie floue + copie nette). */
   children: React.ReactNode;
 };
@@ -49,6 +54,7 @@ export const Plateau: React.FC<PlateauProps> = ({
   entree = 12,
   duree = PLAN,
   surEchantillonnage,
+  ombre: intensiteOmbre = 1,
   children,
 }) => {
   const frame = useCurrentFrame();
@@ -105,7 +111,8 @@ export const Plateau: React.FC<PlateauProps> = ({
   const masqueMoyen = bande(demiLargeur + fondu * 0.45, fondu * 0.9);
   // Le lointain (haut) et le premier plan (bas) tombent dans l'ombre : la lumière est posée sur
   // la zone nette, le flou ne doit jamais être plus visible que le sujet.
-  const ombre = `linear-gradient(${angle}deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) ${Math.max(0, centre - demiLargeur - fondu)}%, rgba(0,0,0,0) ${centre - demiLargeur}%, rgba(0,0,0,0) ${centre + demiLargeur}%, rgba(0,0,0,0.3) ${Math.min(100, centre + demiLargeur + fondu)}%, rgba(0,0,0,0.6) 100%)`;
+  const o = (a: number) => `rgba(0,0,0,${(a * intensiteOmbre).toFixed(3)})`;
+  const ombre = `linear-gradient(${angle}deg, ${o(0.82)} 0%, ${o(0.45)} ${Math.max(0, centre - demiLargeur - fondu)}%, rgba(0,0,0,0) ${centre - demiLargeur}%, rgba(0,0,0,0) ${centre + demiLargeur}%, ${o(0.3)} ${Math.min(100, centre + demiLargeur + fondu)}%, ${o(0.6)} 100%)`;
 
   return (
     <AbsoluteFill style={{ filter: `brightness(${lumiere})` }}>
