@@ -47,6 +47,14 @@ const plans = M.plans.map((p) => {
   return d;
 });
 const P = plans.map((p) => p.debut / fps); // début de chaque plan, en secondes
+// Garde-fous sur le montage (les erreurs que le contrôle vidéo ne voit pas) :
+for (const p of plans) {
+  const decalages = Object.values(p.horloges ?? {});
+  if (decalages.length && Math.max(...decalages) > -3)
+    console.warn(`⚠ plan « ${p.id} » : horloge ≥ -3 → le plan risque de commencer vide (temps mort après la coupe). Mets -6 (ou -12 pour la barre du haut).`);
+  if (p.duree < 75 || p.duree > 110) console.warn(`⚠ plan « ${p.id} » : ${p.duree} images (le style tient des plans de 88–92 images).`);
+}
+
 const fin = { type: "recul", logo: false, logoDebut: 48, logoDuree: 22, total: 120, ...(M.fin ?? {}) };
 const debutFin = curseur;
 const DUREE = (debutFin + (fin.type === "aucune" ? 0 : fin.total)) / fps;
