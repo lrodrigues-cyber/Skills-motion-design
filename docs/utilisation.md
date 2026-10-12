@@ -73,16 +73,16 @@ Les durées dépendent de la machine et de la complexité de l'interface. Deux o
 
 ## 4. La structure du film
 
-Le film suit toujours la même architecture, relevée sur les vidéos de référence :
+Le film suit toujours la même architecture, relevée sur les vidéos de référence (colonne Son : profil sonore « dynamique », celui par défaut) :
 
 | Temps | Plan | Ce qu'on voit | Son |
 |---|---|---|---|
-| 0 – 3 s | 1. Ouverture | En-tête et carte KPI, liseré lumineux sous la carte | Ping de sonar, nappe sombre et basse profonde, arpège feutré |
-| 3 – 6 s | 2. Graphique | Une courbe qui se trace point par point | Coup grave sur la coupe, entrée de la grosse caisse et de la basse pulsée, montée qui suit le tracé |
-| 6 – 9 s | 3. Alerte | Un grand chiffre en rouge et sa barre lumineuse | Nouvel accord, grosse caisse sur chaque temps |
-| 9 – 12 s | 4. Deuxième graphique | Des barres qui poussent en cascade, couleurs opposées | Une note grave par barre, au moment où elle pousse ; claquements |
-| 12 – 15 s | 5. Action | La barre du haut et le bouton principal | Grondement qui monte, roulement qui accélère |
-| 15 – 19 s | Révélation | Recul sur le tableau de bord entier, qui respire puis s'éteint | La musique s'arrête net : explosion sourde, whoosh, deux battements, silence |
+| 0 – 3 s | 1. Ouverture | En-tête et carte KPI, liseré lumineux sous la carte | Intro calme et filtrée, tics quand les chiffres défilent, montée vers le drop |
+| 3 – 6 s | 2. Graphique | Une courbe qui se trace point par point | **Drop** sur la coupe (impact, cymbale, batterie, sub), « bloop » et tintement sur le tracé |
+| 6 – 9 s | 3. Alerte | Un grand chiffre en rouge et sa barre lumineuse | Bloop sur la barre qui se remplit, train de tics sur le compteur |
+| 9 – 12 s | 4. Deuxième graphique | Des barres qui poussent en cascade, couleurs opposées | Un bloop par barre, de plus en plus aigu, au moment où elle pousse |
+| 12 – 15 s | 5. Action | La barre du haut et le bouton principal | Tintement de verre et bloop sur le bouton, roulement avant la coupe |
+| 15 – 19 s | Révélation | Recul sur le tableau de bord entier, qui respire puis s'éteint | Swoosh, impact, longue cymbale ; l'accord final reste et s'éteint |
 
 Chaque plan est une **coupe franche** : pas de fondu ni de passage par le noir. Le nouveau plan arrive déjà visible, légèrement flou, et devient net en 0,4 s. La caméra glisse en continu pendant tout le film.
 
@@ -110,6 +110,7 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 
 | Réglage | Valeurs possibles | Par défaut |
 |---|---|---|
+| Profil sonore | `dynamique` (électro entraînante, drop, effets d'interface denses : tics, bloops, verre) ou `cinema` (musique de film sombre, effets de cinéma) | `dynamique` |
 | Musique | Générée, ou la vôtre (le skill produit alors les effets sonores seuls) | Générée |
 | Tonalité | Do, ré, mi, fa, sol, la, si, avec ou sans altération | Mi |
 | Mode | Mineur (sombre, tendu) ou majeur (plus lumineux) | Mineur |

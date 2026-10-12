@@ -73,6 +73,22 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     energie[i] = neon + 0.35 * texte;
   }
 
+  // Mouvement LOCAL par case de 10×10 px (gris) : ce qui bouge en plus de la caméra
+  // (chiffres qui défilent, textes qui arrivent, éléments qui glissent).
+  const CX = L / 10,
+    CY = H / 10;
+  const cases = new Float32Array(n * CX * CY);
+  let prec = null;
+  for (let i = 0; i < n; i++) {
+    const o = i * L * H * 3;
+    const gris = new Float32Array(L * H);
+    for (let k = 0; k < L * H; k++) gris[k] = (brut[o + 3 * k] + brut[o + 3 * k + 1] + brut[o + 3 * k + 2]) / 765;
+    if (prec)
+      for (let y = 0; y < H; y++)
+        for (let x = 0; x < L; x++) cases[i * CX * CY + Math.floor(y / 10) * CX + Math.floor(x / 10)] += Math.abs(gris[y * L + x] - prec[y * L + x]) / 100;
+    prec = gris;
+  }
+
   const fps = M.fps;
   let debut = 0;
   const plans = M.plans.map((p) => {
@@ -86,6 +102,31 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const hausse = (i) => (i > 0 ? Math.max(0, energie[i] - energie[i - 1]) : 0);
   const D = Float64Array.from({ length: n }, (_, i) => 0.25 * hausse(i - 1) + 0.5 * hausse(i) + 0.25 * hausse(i + 1));
   const echelle = Math.max(...D) || 1;
+
+  // Activité fine par plan : excès de mouvement local par rapport au « fond » du plan
+  // (médiane des 30 dernières images, quand seule la caméra bouge). Sert aux trains de tics.
+  const activite = [];
+  for (const p of plans) {
+    if (p.fin) continue;
+    const a = p.debut,
+      b = Math.min(n, p.debut + p.duree);
+    const base = new Float32Array(CX * CY);
+    for (let c = 0; c < CX * CY; c++) {
+      const v = [];
+      for (let i = Math.max(a, b - 32); i < b - 2; i++) v.push(cases[i * CX * CY + c]);
+      v.sort((x, y) => x - y);
+      base[c] = v[Math.floor(v.length / 2)] ?? 0;
+    }
+    const valeurs = [];
+    for (let i = a; i < b; i++) {
+      let e = 0;
+      if (i - a >= 3) for (let c = 0; c < CX * CY; c++) e += Math.max(0, cases[i * CX * CY + c] - 2 * base[c] - 0.004);
+      valeurs.push(e);
+    }
+    activite.push({ plan: p.id, valeurs });
+  }
+  const aMax = Math.max(1e-9, ...activite.flatMap((x) => x.valeurs));
+  for (const x of activite) x.valeurs = x.valeurs.map((v) => +(v / aMax).toFixed(3));
 
   const evenements = [];
   for (const p of plans) {
@@ -129,7 +170,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   // Taille relative au plus fort du film : grand (≥ 50 %), moyen (≥ 25 %), petit.
   for (const e of evenements) e.taille = e.force >= 0.5 ? "grand" : e.force >= 0.25 ? "moyen" : "petit";
 
-  const resultat = { video: path.basename(video), images: n, fps, empreinte: empreinteSources(), evenements };
+  const resultat = { video: path.basename(video), images: n, fps, empreinte: empreinteSources(), evenements, activite };
   fs.writeFileSync(sortie, JSON.stringify(resultat, null, 1));
   console.log(`${evenements.length} événements repérés :`);
   for (const p of plans.filter((x) => !x.fin)) {

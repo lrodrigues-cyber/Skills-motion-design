@@ -159,7 +159,9 @@ Formulations qui fonctionnent bien :
 
 | Objectif | Exemple de demande |
 |---|---|
-| Ambiance plus planante | « Passe la musique en style nappe, sans batterie. » |
+| Ambiance film sombre | « Passe au profil sonore cinéma. » |
+| Ambiance plus planante | « Passe au profil cinéma, en style nappe, sans batterie. » |
+| Moins de petits effets | « Il y a trop de tics : baisse-les de moitié. » |
 | Ambiance plus lumineuse | « Passe la musique en mode majeur, tonalité de la. » |
 | Plus d'énergie | « Rends la batterie et la basse encore plus présentes, et vérifie avec l'écoute automatique. » |
 | Effets plus discrets | « Les effets des animations sont trop forts : baisse-les de 30 %. » |

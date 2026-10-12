@@ -2,6 +2,16 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.3.0 (12 octobre 2026)
+
+Nouveau profil sonore « dynamique », d'après deux vidéos fournies par l'utilisateur, devenu le profil par défaut.
+
+- **Musique** : électro lumineuse à 160 BPM, intro filtrée puis « drop » sur la 1re coupe (montée tonale, roulement, cymbale inversée, impact), accords pincés syncopés, nappe qui respire avec la grosse caisse, sub, caisse claire sur le 3e temps ; mastering -12,5 dBFS.
+- **Effets d'interface organiques**, très denses comme la référence : tics dont la densité suit les chiffres qui défilent et les textes qui arrivent, « bloop » de goutte d'eau sur les barres et la courbe, tintement de verre sur les petits éléments et le bouton, swoosh + impact + cymbale sur chaque coupe.
+- **Repérage** : nouvelle mesure d'activité fine (mouvement local au-delà de la caméra) pour les compteurs et les textes.
+- **Écoute automatique** par profil : référence A pour `dynamique` (0,857), les 5 vidéos d'origine pour `cinema`.
+- Le profil « cinéma » de la version 1.2 reste disponible (`"profil": "cinema"`), à l'identique.
+
 ## dashboard-cinematique 1.2.0 (12 octobre 2026)
 
 Effets sonores calés sur les animations et musique plus percutante.

@@ -167,3 +167,19 @@ Conclusions appliquées dans `scripts/bande-son.mjs` :
 - **V3** : drone grave pulsé (pompe en doubles-croches), stabs ; 6,3–6,9 s glissando ; 9,1 s une couche plus claire entre ; 12,3 s souffle ; 15,2 s **impact** (le plus fort de la vidéo, -16 dB RMS) avec accord grave tenu ; 17 s queue bruitée jusqu'à 20 s.
 - **V4** : arpège pluck en doubles-croches à 94 BPM + sub ; le filtre s'ouvre jusqu'à 17,25 s (aigus jusqu'à 8–16 kHz) ; 17,4 s **arrêt de bande** + boum ; puis l'arpège revient tout bas et filtré jusqu'à la fin.
 - **V5** : boucle lo-fi : grosse caisse douce à hauteur descendante (~0,62 s), basse et accords tenus ; niveau qui respire ; pas de révélation (montage).
+
+---
+
+## 5. Références sonores ajoutées par l'utilisateur (profil « dynamique »)
+
+L'utilisateur a jugé que le son « film sombre » ne correspondait pas à ce qu'il cherchait et a fourni deux vidéos dont il aime le son.
+
+**A : promo Framer (earnedits), 24 s, 24 i/s.** Typographie animée mot par mot, curseur qui clique, maquette de site qui se construit, mots « Design / Animate / Publish », logo.
+- Musique électro lumineuse ~144 BPM (ré♭ / si♭ mineur), intro calme puis drop à 3,4 s sur la 1re grande coupe ; RMS -12 dBFS.
+- Effets très denses (4,1 attaques aiguës par seconde) : un tic par mot qui s'écrit, bips et tintements de verre à l'ouverture (YAMNet *Glass 0,12, Beep 0,10*), sons de bulles et de liquide sur les blocs qui se posent (*Pour 0,19, Drip 0,35, Squish 0,32* vers 10–11,5 s), impact grave qui tombe sur chaque coupe.
+- Les coupes ne tombent pas toutes sur les temps de la musique (écart jusqu'à ±190 ms) : ce sont les **effets** qui marquent les coupes.
+
+**B : promo Higgsfield, 32 s, 30 i/s.** Fonds verts organiques, cartes et boutons, galerie d'images. Le son est porté par une **voix off** (YAMNet *Speech* 0,8 en moyenne) ; musique très en retrait ; effets liquides et organiques (*Pour, Trickle, Splash, Glass*).
+
+Conclusion appliquée : profil sonore `dynamique` (voir `recette-son.md`), devenu le profil par défaut. La voix off n'est pas générée par le skill.
+

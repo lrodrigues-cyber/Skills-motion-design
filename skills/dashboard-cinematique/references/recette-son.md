@@ -2,13 +2,62 @@
 
 Le son compte autant que l'image dans ce style. Une des références le dit : « Motion makes it feel alive. Sound makes it feel expensive. » Ce fichier explique ce que les références font, comment `scripts/bande-son.mjs` le reproduit, comment le régler et comment le vérifier.
 
-## Les trois règles
+## Deux profils sonores
+
+| Profil (`musique.profil`) | Pour qui | Ce qu'on entend |
+|---|---|---|
+| **`dynamique`** (par défaut) | Promo produit, lancement, réseaux sociaux : ce que l'utilisateur a choisi | Électro lumineuse et entraînante, « drop » sur la 1re coupe, effets d'interface organiques très denses |
+| `cinema` | Film de marque sombre, ambiance « bande-annonce » | Musique de film électronique sombre, effets de cinéma concentrés sur la révélation |
+
+Les deux profils partagent la grille (coupes sur les temps forts), le repérage des animations et les outils de vérification.
+
+## Profil « dynamique » (par défaut)
+
+### Ce que fait la référence A (mesuré)
+
+Vidéo de promo produit (Framer, earnedits), 24 s, choisie par l'utilisateur comme modèle sonore. Une 2e vidéo (Higgsfield) est portée par une **voix off**, avec une musique très en retrait et quelques effets liquides : ce profil ne produit pas de voix.
+
+| Mesure | Référence A |
+|---|---|
+| Musique | Électro lumineuse (YAMNet : *Electronic, Dubstep, Electronica, Trance, House*), ~144 BPM, tonalité ré♭ majeur / si♭ mineur |
+| Structure | Intro calme (accords, un tic par mot qui s'écrit), montée, **drop à 3,4 s** sur la 1re grande coupe, puis le groupe entier |
+| Coupes | Un impact grave qui tombe (pitch qui descend) + souffle sur chaque coupe |
+| Effets | **4,1 attaques aiguës par seconde** : tics, bips, tintements de verre (*Glass, Beep, Chink*), gouttes et sons élastiques (*Liquid, Drip, Squish, Plop*) sur chaque élément qui apparaît |
+| Niveau | RMS -12 dBFS (fort), son brillant |
+
+### Profil « cinéma » : ce que le script produit
+
+| Moment | Musique | Effets |
+|---|---|---|
+| Plan 1 (intro) | Accords pincés filtrés, nappe douce ; pas de batterie | Tintement + swoosh d'ouverture, **tics** sur ce qui défile ou s'écrit, effets des animations |
+| Fin du plan 1 | **Montée** : accord qui glisse d'une octave, filtre qui s'ouvre, roulement de caisse claire qui accélère, cymbale inversée | |
+| Coupe vers le plan 2 | **Drop** : impact, cymbale, grosse caisse, sub | Swoosh qui finit sur la coupe + impact |
+| Plans 2 à 5 | 160 BPM (2 mesures par plan de 3 s) : grosse caisse sur 1 et « 3 et », caisse claire sur le 3e temps, charleston, accords pincés syncopés (3-3-2), nappe qui « respire » avec la grosse caisse, sub sur chaque accord ; petit roulement avant chaque coupe | Swoosh + impact + cymbale sur chaque coupe ; tics, bloops et verre sur les animations |
+| Révélation | Impact + longue cymbale ; l'accord final reste et son filtre se referme | Swoosh, impact |
+
+Grille : i – VI – III – VII (mineur, par défaut en si♭) ou I – V – vi – IV (majeur), un accord par mesure. Mastering à -12,5 dBFS RMS, aigus ouverts.
+
+### Les effets d'interface
+
+| Événement repéré | Effet |
+|---|---|
+| Grand (courbe tracée, barre rouge, bouton) | « Bloop » grave (goutte d'eau) + tintement de verre aigu + souffle qui suit la lumière |
+| Moyen (barres en cascade) | Un bloop par barre, plus aigu à chaque barre |
+| Petit (liseré, avatar) | Tintement de verre |
+| Activité fine (chiffres qui défilent, textes qui arrivent) | **Train de tics** dont la densité suit le défilement (jusqu'à ~25 par seconde), tic par tic |
+| Chaque coupe | Swoosh qui finit pile sur la coupe + impact grave |
+
+Réglages propres au profil (`musique.reglages`) : `plucks`, `pad`, `tics`, `bloops`, `verre`, `crash`, `drop`, plus `caisse`, `claquement`, `charleston`, `sub`, `reverb`, `whoosh`, `accents`, `animations`.
+
+Vérifié avec `ecoute.py` : similarité 0,857 avec la référence A ; YAMNet entend *Electronic, Dubstep, House, Disco* sur la musique, *Glass, Ping, Chink* sur le bouton, *Liquid, Drip* sur les barres.
+
+## Profil « cinéma » : les trois règles
 
 1. **Le son colle à l'image.** Chaque plan contient un nombre entier de mesures, et le premier temps tombe exactement sur la coupe : l'accord change, un souffle inversé y mène, une frappe la marque. **Chaque animation visible a son effet**, posé automatiquement à l'image près sur ce qui s'allume réellement à l'écran (`reperage.mjs`), avec une enveloppe qui suit la courbe de l'animation.
 2. **Ça sonne comme une musique de film électronique.** Sub profond, basse pulsée filtrée, nappe sombre et large, arpège grave et doux, batterie électronique feutrée. **Jamais de son pincé, de clochette ou d'arpège clair** : ils sont entendus comme une harpe, un clavecin, une musique de jeu vidéo ou une musique pour enfants (c'est ce qui faisait « cheap » dans les premières versions, voir `analyse-references.md` § Écoute automatique).
 3. **Les effets sont des effets de cinéma**, concentrés sur la révélation : grondement qui monte, whoosh, explosion sourde, battement. Aucun clic d'interface.
 
-## Ce que le script produit
+## Profil « cinéma » : ce que le script produit
 
 **Une seule source de vérité : `src/film/montage.json`.** Le script lit les plans, leurs effets (`son`) et la fin. Dès qu'on change le montage, on relance `node scripts/bande-son.mjs` (≈ 5 s). La musique est **originale** et synthétisée par le script (on ne copie pas la musique des références, on reproduit leur grammaire). Le résultat est déterministe : même montage + même `--graine` = même fichier.
 
@@ -62,13 +111,14 @@ Le repérage porte une **empreinte de l'interface et du montage** (hors son). Si
 
 | Clé | Valeurs | Effet |
 |---|---|---|
-| `tonique` | `C`…`B`, `F#`, `Bb`… | Tonalité (références : F, C, D♭/A♭, A, E) |
+| `profil` | `dynamique` (défaut) / `cinema` | Voir « Deux profils sonores » |
+| `tonique` | `C`…`B`, `F#`, `Bb`… | Tonalité (défaut : si♭ en dynamique comme la référence A, mi en cinéma) |
 | `mode` | `mineur` (défaut) / `majeur` | Couleur. Mineur = toutes les références |
 | `style` | `pulse` (défaut) / `nappe` | Avec batterie électronique, ou nappe planante sans batterie |
-| `revelation` | `arret` (défaut) / `filtre` | La musique s'arrête net, ou son filtre se ferme en 0,35 s |
+| `revelation` | `arret` (défaut) / `filtre` | Cinéma : la musique s'arrête net, ou son filtre se ferme en 0,35 s |
 | `queue` | `true` / `false` | Accord de résolution filtré qui s'éteint après la révélation |
-| `bpm` | 80 par défaut | Nombre de mesures par plan (160 → 2 mesures par plan de 3 s, plus dense) |
-| `volume` | 0.5–1.2 | Gain final (RMS cible -14,5 dBFS × volume) |
+| `bpm` | 160 (dynamique) / 80 (cinéma) | Nombre de mesures par plan : 160 → 2 mesures par plan de 3 s, 80 → 1 mesure |
+| `volume` | 0.5–1.2 | Gain final (RMS cible -12,5 dBFS en dynamique, -14,5 en cinéma, × volume) |
 | `reglages` | ex. `{ "animations": 0.7, "caisse": 1.4 }` | Dosage fin des couches (valeurs par défaut réglées à l'oreille) : `sub`, `nappe`, `basse`, `arpege`, `caisse`, `claquement`, `charleston`, `frappe` (coupes), `animations` (effets repérés), `reverb`, `sfx`, `accents`, `grondement`, `explosion`, `whoosh`, `ping`, `montee` (dB du 1er au dernier plan). Relancer `ecoute.py` après tout changement |
 
 ## Effets ajoutés à la main (`plans[i].son`, facultatif)

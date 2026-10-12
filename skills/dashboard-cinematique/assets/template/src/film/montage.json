@@ -67,5 +67,5 @@
     }
   ],
   "fin": {"type": "recul", "logo": false, "part": 0.56, "extinctionDebut": 78, "extinctionDuree": 36, "total": 120, "logoDebut": 48, "logoDuree": 22, "logoTaille": 150},
-  "musique": {"bpm": 80, "tonique": "E", "mode": "mineur", "style": "pulse", "revelation": "arret", "queue": true, "volume": 1.0}
+  "musique": {"profil": "dynamique", "tonique": "Bb", "mode": "mineur", "queue": true, "volume": 1.0}
 }

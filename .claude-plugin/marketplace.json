@@ -10,7 +10,7 @@
       "name": "motion-design",
       "source": "./",
       "description": "Vidéos motion design générées par Claude : dashboard cinématique (UI SaaS sombre en macro 3D, néons, musique et effets sonores originaux).",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": { "name": "lrodrigues-cyber" },
       "homepage": "https://github.com/lrodrigues-cyber/Skills-motion-design",
       "repository": "https://github.com/lrodrigues-cyber/Skills-motion-design",

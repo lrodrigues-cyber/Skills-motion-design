@@ -5,12 +5,14 @@
     python3 scripts/ecoute.py out/film.mp4 --jusqua 15
 
 Le modèle YAMNet (Google, AudioSet, 521 classes de sons) écoute la piste et répond à deux questions :
-  1. Est-ce que ça sonne comme les vidéos de référence du style ? On compare l'empreinte de la
-     piste à celle des 5 références (scripts/empreinte-son.json, empreintes seules : aucun son copié).
-     Repères : les références entre elles 0,65–0,85 ; la bande-son d'exemple 0,87 ; l'ancienne
-     bande-son rejetée 0,69.
-  2. Est-ce qu'un son est lu de travers ? Harpe, clavecin, musique de jeu vidéo, « ding », musique
-     pour enfants : c'est ce qui faisait sonner les premières versions « cheap ».
+  1. Est-ce que ça sonne comme les références du profil sonore ? On compare l'empreinte de la piste
+     à celle des références (scripts/empreinte-son.json, empreintes seules : aucun son copié).
+     • profil « dynamique » : vidéo A (promo produit, électro + effets d'interface) ; bande-son
+       d'exemple 0,85.
+     • profil « cinema » : les 5 vidéos de film sombre ; références entre elles 0,65–0,85,
+       bande-son d'exemple 0,83, ancienne bande-son rejetée 0,69.
+  2. Est-ce qu'un son est lu de travers ? Harpe, clavecin, musique de jeu vidéo (et, en profil
+     cinéma, « ding » et musique pour enfants) : c'est ce qui faisait sonner les premières versions « cheap ».
 
 Installation (une fois, ~600 Mo) : pip install tensorflow-cpu tf_keras soundfile scipy
 Le modèle (15 Mo) est téléchargé au premier lancement dans ~/.cache/dashboard-cinematique/yamnet.
@@ -25,8 +27,13 @@ SOURCES = {
     "features.py": "https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/features.py",
     "yamnet_class_map.csv": "https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv",
 }
-MAUVAIS = ["Harp", "Harpsichord", "Pizzicato", "Video game music", "Music for children", "Ding", "Jingle, tinkle",
-            "Doorbell", "Glockenspiel", "Music box", "Bell", "Chime", "Plucked string instrument"]
+MAUVAIS = {
+    "cinema": ["Harp", "Harpsichord", "Pizzicato", "Video game music", "Music for children", "Ding", "Jingle, tinkle",
+               "Doorbell", "Glockenspiel", "Music box", "Bell", "Chime", "Plucked string instrument"],
+    # en profil dynamique, verre, bips et « ding » font partie du style (référence A) : seuls les sons
+    # de jeu vidéo ou de harpe sont refusés
+    "dynamique": ["Harp", "Harpsichord", "Pizzicato", "Video game music"],
+}
 FILM = ["Soundtrack music", "Ambient music", "Electronic music", "Scary music", "Theme music", "Synthesizer",
         "Electronica", "Techno", "Trance music", "New-age music", "Background music"]
 EFFETS = ["Whoosh, swoosh, swish", "Arrow", "Explosion", "Burst, pop", "Rumble", "Vehicle", "Timpani",
@@ -72,13 +79,22 @@ def main():
     ap.add_argument("fichier")
     ap.add_argument("--jusqua", type=float, default=14.5, help="fin de la partie musicale à comparer (s), 14,5 par défaut")
     ap.add_argument("--seuil", type=float, default=0.80, help="similarité minimale aux références (0,80 par défaut)")
+    ap.add_argument("--profil", choices=["dynamique", "cinema"], help="profil sonore (par défaut : celui de src/film/montage.json)")
     o = ap.parse_args()
+    if not o.profil:
+        try:
+            m = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src", "film", "montage.json")))
+            o.profil = "cinema" if m.get("musique", {}).get("profil") == "cinema" else "dynamique"
+        except Exception:
+            o.profil = "dynamique"
 
     net, classes = modele()
     ici = os.path.dirname(os.path.abspath(__file__))
-    refs = json.load(open(os.path.join(ici, "empreinte-son.json")))["references"]
+    emp = json.load(open(os.path.join(ici, "empreinte-son.json")))
+    refs = {k: emp["references"][k] for k in emp["profils"][o.profil]}
     cos = lambda a, b: float(np.dot(a, b) / np.linalg.norm(a) / np.linalg.norm(b))
 
+    print(f"Profil sonore : {o.profil}")
     y, duree = charge(o.fichier, 0, o.jusqua)
     scores, emb, _ = net(y)
     scores, emb = scores.numpy(), emb.numpy()
@@ -99,10 +115,10 @@ def main():
     sc_tout, _, _ = net(yy)
     sc_tout = sc_tout.numpy()
     for k in range(sc_tout.shape[0]):
-        for c in MAUVAIS:
+        for c in MAUVAIS[o.profil]:
             if c in classes and sc_tout[k][classes.index(c)] > 0.12:
                 problemes.append(f"vers {k * 0.48:.1f} s : son lu comme « {c} » ({sc_tout[k][classes.index(c)]:.2f}) — trop pincé, trop cloche ou trop aigu")
-    if duree > o.jusqua + 1:
+    if duree > o.jusqua + 1 and o.profil == "cinema":
         fin = sc_tout[int(o.jusqua / 0.48):].max(0)
         vus = [f"{c.split(',')[0]} {fin[classes.index(c)]:.2f}" for c in EFFETS if c in classes and fin[classes.index(c)] > 0.08]
         print("Révélation :", ", ".join(vus) if vus else "aucun effet de cinéma reconnu (whoosh, explosion, grondement…)")
