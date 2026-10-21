@@ -10,7 +10,7 @@
       "name": "motion-design",
       "source": "./",
       "description": "Vidéos motion design générées par Claude : dashboard cinématique (votre interface reproduite à l'identique, filmée en macro 3D, musique et effets sonores originaux).",
-      "version": "1.4.1",
+      "version": "1.5.0",
       "author": { "name": "lrodrigues-cyber" },
       "homepage": "https://github.com/lrodrigues-cyber/Skills-motion-design",
       "repository": "https://github.com/lrodrigues-cyber/Skills-motion-design",

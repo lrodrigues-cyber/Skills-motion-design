@@ -46,7 +46,11 @@ INTERFACE
 - Reprends exactement mon interface : mêmes couleurs, mêmes modules, mêmes textes,
   mêmes icônes et logos. Ne change ni le thème ni les couleurs.
 
-LES 5 PLANS (un seul élément par plan, dans cet ordre)
+DÉCOUPAGE
+- Nombre de plans de coupe : [ex. 8, ou « libre » (5 par défaut)]
+- Durée de la vidéo : [ex. 30 s, ou « libre » (≈ 20 s par défaut)]
+
+LES PLANS (un seul élément par plan, dans cet ordre ; un élément peut revenir sous un autre angle)
 1. [Ouverture : ex. l'en-tête et la carte « Revenu mensuel : 128 400 € »]
 2. [Graphique qui se trace : ex. la courbe des inscriptions sur 12 mois]
 3. [Chiffre fort ou alerte : ex. « Quota API : 92 % » en rouge]

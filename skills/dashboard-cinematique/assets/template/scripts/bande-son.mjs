@@ -64,7 +64,9 @@ for (const p of plans) {
   const decalages = Object.values(p.horloges ?? {});
   if (decalages.length && Math.max(...decalages) > -3)
     console.warn(`⚠ plan « ${p.id} » : horloge ≥ -3 → le plan risque de commencer vide (temps mort après la coupe). Mets -6 (ou -12 pour la barre du haut).`);
-  if (p.duree < 75 || p.duree > 110) console.warn(`⚠ plan « ${p.id} » : ${p.duree} images (le style tient des plans de 88–92 images).`);
+  if (p.duree < 75 || p.duree > 185) console.warn(`⚠ plan « ${p.id} » : ${p.duree} images (le style tient des plans de 3 à 6 s, 90 à 180 images).`);
+  else if (p.duree % 45 > 3 && p.duree % 45 < 42)
+    console.warn(`⚠ plan « ${p.id} » : ${p.duree} images, pas un multiple de 45 (1,5 s) : le tempo varie d'un plan à l'autre. Utilise scripts/decoupage.mjs.`);
 }
 
 const fin = { type: "recul", logo: false, logoDebut: 48, logoDuree: 22, total: 120, ...(M.fin ?? {}) };

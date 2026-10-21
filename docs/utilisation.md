@@ -98,6 +98,9 @@ Tout se demande en français, dans la conversation. Claude modifie le projet, r�
 
 | Réglage | Valeurs possibles | Par défaut |
 |---|---|---|
+| Nombre de plans de coupe | Au choix (3 à 6 s chacun) | 5 |
+| Durée de la vidéo | Au choix, de 10 s à 1 min environ | ≈ 20 s |
+| Types de plans | Gros plan, travelling, rasant, plongée, zoom avant, éloigné, orbite | Alternés automatiquement |
 | Contenu des plans | N'importe quel élément de votre interface, un par plan | KPI, courbe, alerte, barres, bouton |
 | Ordre des plans | Libre | Du plus calme au plus spectaculaire |
 | Couleurs de l'interface | Celles de votre capture, relevées au pixel (elles ne se changent que si vous le demandez) | Celles de la capture |

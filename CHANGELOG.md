@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.5.0 (21 octobre 2026)
+
+Le client choisit le nombre de plans de coupe et la durée de sa vidéo.
+
+- **Nouveau `scripts/decoupage.mjs`** : `--plans`, `--duree`, `--blocs`, `--cadrages`. Calcule la durée de chaque plan (multiple de 1,5 s, entre 3 et 6 s, pour que chaque coupe tombe sur un temps fort de la musique), alterne les cadrages, fait revenir un module sous un autre angle, et donne la durée réelle obtenue.
+- **7 types de plans de coupe** (`src/cinema/cadrages.ts`) : `macro`, `travelling`, `rasant`, `plongee`, `zoom-avant`, `eloigne`, `orbite`. Un plan s'écrit `{ "cible": "courbe", "cadrage": "travelling" }` ; la caméra écrite à la main reste possible.
+- Musique et repérage suivent n'importe quel nombre de plans (testé : 10 plans, 34 s) ; la bande-son avertit si un plan n'est pas un multiple de 1,5 s.
+
 ## dashboard-cinematique 1.4.1 (21 octobre 2026)
 
 Corrections relevées sur la vidéo de test Audivo.

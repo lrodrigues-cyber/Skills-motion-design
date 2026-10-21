@@ -4,17 +4,23 @@ import { Plateau, type PlateauProps } from "../cinema/Plateau";
 import { Recul } from "../cinema/Recul";
 import { LogoTrace } from "../cinema/Logo";
 import { Etalonnage } from "../cinema/Etalonnage";
-import { Dashboard, MONDE, type Bloc } from "../ui/Dashboard";
+import { cadrer, type Cadrage } from "../cinema/cadrages";
+import { CENTRES, Dashboard, MONDE, type Bloc } from "../ui/Dashboard";
 import { MARQUE_EPAISSEUR, MARQUE_TRACE, MARQUE_VUE } from "../ui/Marque";
 import { couleurs } from "../style/tokens";
 import { ease, prog } from "../lib/anim";
 import montage from "./montage.json";
 
+type Camera = Pick<PlateauProps, "cible" | "zoom" | "inclinaison" | "rotation" | "nettete">;
 type Plan = {
   id: string;
   duree: number;
   horloges: Partial<Record<Bloc, number>>;
-  camera: Pick<PlateauProps, "cible" | "zoom" | "inclinaison" | "rotation" | "nettete">;
+  /** Type de plan de coupe (cinema/cadrages.ts), calculé autour de `cible` (un bloc ou un point du monde). */
+  cadrage?: Cadrage;
+  cible?: Bloc | { x: number; y: number };
+  /** Caméra écrite à la main : prioritaire sur `cadrage`. */
+  camera?: Camera;
 };
 
 /**
@@ -40,7 +46,14 @@ type Fin = {
   horloges?: Partial<Record<Bloc, number>>;
 };
 
-const PLANS = montage.plans as unknown as Plan[];
+/** Caméra d'un plan : la sienne si elle est écrite, sinon celle de son cadrage autour de sa cible. */
+const cameraDe = (p: Plan, n: number): Camera => {
+  if (p.camera) return p.camera;
+  const bloc = (typeof p.cible === "string" ? p.cible : undefined) ?? (Object.keys(p.horloges ?? {})[0] as Bloc | undefined);
+  const centre = typeof p.cible === "object" ? p.cible : bloc ? CENTRES[bloc] : { x: MONDE.largeur / 2, y: MONDE.hauteur / 2 };
+  return cadrer(p.cadrage ?? "macro", centre, n);
+};
+const PLANS = (montage.plans as unknown as Plan[]).map((p, n) => ({ ...p, camera: cameraDe(p, n) }));
 const FIN = montage.fin as unknown as Fin;
 /**
  * Thème de l'interface du client, à reprendre de sa capture (scripts/capture.mjs infos le donne) :
@@ -112,7 +125,7 @@ const FinBarre: React.FC = () => {
 };
 
 /** Un plan rapproché : le monde entier, filmé par le Plateau ; seuls les blocs du plan s'animent. */
-const Horloge: React.FC<{ plan: Plan }> = ({ plan }) => {
+const Horloge: React.FC<{ plan: Plan & { camera: Camera } }> = ({ plan }) => {
   const frame = useCurrentFrame();
   return (
     <Plateau monde={MONDE} duree={plan.duree} ombre={OMBRE} {...plan.camera}>

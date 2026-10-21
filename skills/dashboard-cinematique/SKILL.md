@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : l'interface du client, reproduite à l'identique d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière, musique électro originale avec « drop » et effets sonores calés sur chaque animation. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.4.1"
+  version: "1.5.0"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -30,8 +30,9 @@ Sans capture ni code (« invente un dashboard »), la palette sombre du gabarit 
 
 | | Règle | Pourquoi |
 |---|---|---|
-| **Format** | 16:9, 1920×1080, 30 i/s, **~20 s** (19,5–21,5 s) | Durée et cadre de toutes les références |
-| **Structure** | **5 plans rapprochés de 90 images** (≈ 3 s) en coupe franche, puis la fin (~4 s) | Coupes relevées à 2,9 / 5,8 / 8,8 / 11,7 / 14,6 s, etc. |
+| **Format** | 16:9, 1920×1080, 30 i/s, **durée au choix du client** (≈ 20 s par défaut, 10 à 60 s) | Durée et cadre des références : 20 s |
+| **Structure** | **Le client choisit le nombre de plans de coupe et/ou la durée** (`scripts/decoupage.mjs`). Par défaut : 5 plans de 3 s + fin ≈ 20 s. Plans de **3 à 6 s, multiples de 1,5 s** (une mesure à 160 BPM : chaque coupe tombe sur un temps fort), en coupe franche, puis la fin (~4 s) | Coupes relevées à 2,9 / 5,8 / 8,8 / 11,7 / 14,6 s dans les références ; au-delà de 6 s un plan s'essouffle |
+| **Plans de coupe variés** | 7 cadrages (`cinema/cadrages.ts`) : `macro`, `travelling`, `rasant`, `plongee`, `zoom-avant`, `eloigne`, `orbite`. Jamais deux fois le même d'affilée ; un module qui revient change d'angle | Un film long ne tient que si chaque coupe apporte un nouveau point de vue |
 | **Un plan = un composant** | Une courbe, *ou* une carte KPI, *ou* une liste, *ou* un bouton. Jamais deux idées | Le spectateur lit une seule chose à la fois |
 | **Caméra** | UI posée en 3D : inclinaison 45–56°, rotation -17 à -33°, zoom 3,2–5. **Dérive lente à vitesse constante** (la cible glisse de 70–140 px du monde, zoom +5 %), sans accélérer ni freiner | L'interface devient un objet. Le mouvement ne s'arrête jamais : chaque coupe se fait **en mouvement** |
 | **Angle** | Change à chaque plan (inclinaison/rotation différentes) | Évite la monotonie sans transition |
@@ -53,7 +54,7 @@ Sans capture ni code (« invente un dashboard »), la palette sombre du gabarit 
 
 Pose au plus 2–3 questions, et seulement sur ce que tu ne peux pas inventer :
 - **Les écrans réels** du produit : une capture nette de la page entière (PNG, sans redimensionnement), ou le code de l'application. C'est cette capture qui sera reproduite à l'identique.
-- Les **5 moments** à montrer : quel graphique, quel chiffre, quelle alerte, quel bouton. Sans réponse, choisis les 5 modules les plus forts de la capture.
+- Le **nombre de plans de coupe** et/ou la **durée** de la vidéo (par défaut 5 plans, ≈ 20 s), et les **moments** à montrer : quel graphique, quel chiffre, quelle alerte, quel bouton. Sans réponse, choisis les modules les plus forts de la capture.
 - **Les vraies données** : libellés, montants, noms. On n'invente jamais un chiffre présenté comme réel. Sans données, utilise des données d'exemple crédibles et dis-le clairement à la livraison.
 - **Le logo** : seulement si l'utilisateur veut un logo de fin (désactivé par défaut). De préférence un SVG en **trait continu** (tracé à la comète) ; un logo plein ou une image passe par `LogoMasque`.
 - Le choix entre **musique générée** (par défaut) et musique du client.
@@ -101,6 +102,28 @@ Briques du gabarit (film d'exemple « Nova », interface sombre) : **la mécaniq
 
 ### 4. Écrire le montage : `src/film/montage.json`
 
+**Découpage** (nombre de plans, durée, cadrages) : génère-le, ne l'écris pas à la main.
+```bash
+node scripts/decoupage.mjs --duree 40 --blocs kpi1,courbe,donut,tableau,kpi3,stats,bouton
+node scripts/decoupage.mjs --plans 12 --blocs kpi1,courbe,donut,tableau,bouton        # 12 plans de 3 s
+node scripts/decoupage.mjs --duree 30 --plans 6 --blocs … --cadrages macro,travelling,plongee
+```
+Il calcule la durée de chaque plan (multiple de 1,5 s, entre 3 et 6 s), alterne les cadrages, fait revenir les modules sous un autre angle s'il y a plus de plans que de modules, et dit la durée réelle obtenue. Chaque plan s'écrit alors `{ "cible": "courbe", "cadrage": "travelling", "horloges": { "courbe": -8 } }` ; une `camera` complète (ci-dessous) reste possible pour un réglage fin.
+
+| Cadrage | Mouvement | Idéal pour |
+|---|---|---|
+| `macro` | Gros plan incliné, dérive lente | Ouverture, chiffre clé |
+| `travelling` | Glissement latéral franc | Liste, tableau, graphique large, rangée de cartes (pas un élément collé au bord de l'interface) |
+| `rasant` | Angle très rasant, très près | Anneau, gros chiffre, barres (relief) |
+| `plongee` | Presque vu du dessus, avance doucement | Tableau, carte entière à lire |
+| `zoom-avant` | Part du contexte, finit sur l'élément | Révéler un détail |
+| `eloigne` | Part du détail, découvre l'élément entier | Avant la fin |
+| `orbite` | L'interface tourne sous la caméra | Carte compacte, anneau, statistiques |
+
+Regarde une image au milieu de chaque plan (`npx remotion still DashboardFilmMuet out/p.png --frame=<début+50> --scale=0.4`) : si un cadrage montre surtout du vide (bord de l'interface) ou une zone sans contenu, change son cadrage ou ajuste `CENTRES`.
+
+**Caméra à la main** (facultatif) :
+
 Un plan :
 ```json
 {
@@ -130,7 +153,7 @@ Cadrages qui fonctionnent (testés) :
 | Barres / liste (plusieurs lignes) | 3,7 → 3,9 | 47 → 46 | -17 → -19 | `demiLargeur` 15, `fondu` 24 |
 | Barre du haut / bouton | 4,8 → 5,1 | 46 → 45 | -17 → -19 | défaut |
 
-Ordre conseillé des 5 plans, avec les modules du client : une ouverture calme (en-tête, chiffre clé), un graphique qui se trace, un chiffre fort ou une alerte, un deuxième graphique ou un tableau, puis le bouton d'action. Varie les couleurs d'un plan à l'autre en choisissant des modules différents, jamais en recolorant.
+Ordre conseillé, avec les modules du client : une ouverture calme (en-tête, chiffre clé), un graphique qui se trace, un chiffre fort ou une alerte, un deuxième graphique ou un tableau, puis le bouton d'action ; un film plus long intercale les autres modules et fait revenir les plus forts sous un autre cadrage. Varie les couleurs d'un plan à l'autre en choisissant des modules différents, jamais en recolorant.
 
 Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera` et `horloges`) ou `aucune` ; `logo` vaut `false` par défaut. Valeurs testées sans logo : `part` 0,88, `extinctionDebut` 78, `extinctionDuree` 36, `total` 120. Avec logo (`"logo": true`) : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150, et remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
 

@@ -20,7 +20,7 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 | Skill | Style | Idéal pour | Version |
 |---|---|---|---|
-| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en macro sur un plan 3D incliné : profondeur de champ courte, plans de 3 s en coupe franche, recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.4.1 |
+| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée sur un plan 3D incliné avec 7 types de plans de coupe (gros plan, travelling, plongée, rasant, zoom, orbite…) ; nombre de plans et durée au choix ; recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.5.0 |
 
 D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
@@ -28,8 +28,8 @@ D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
 Vous décrivez votre produit et vous joignez une capture de votre interface. Claude reconstruit l'interface en code **à l'identique** (il mesure la capture au pixel, puis compare automatiquement sa reconstruction à l'original jusqu'à ce qu'elles correspondent), la filme comme un objet et livre :
 
-- **une vidéo MP4** en 1920×1080, 30 images/s, d'environ 20 s (4K en option) ;
-- **5 plans rapprochés de 3 s**, un élément de l'interface par plan (chiffre clé, courbe, alerte, graphique, bouton), puis un **recul** sur le tableau de bord complet ;
+- **une vidéo MP4** en 1920×1080, 30 images/s, de la durée choisie (≈ 20 s par défaut, 4K en option) ;
+- **autant de plans de coupe que vous voulez** (5 par défaut, ≈ 20 s), de 3 à 6 s, un élément de l'interface par plan, filmés sous 7 angles différents, puis un **recul** sur le tableau de bord complet ;
 - **une bande-son originale** composée pour le montage : intro calme puis « drop » sur la 1re coupe, électro entraînante, et des effets d'interface (tics, bloops, tintements, whoosh) posés automatiquement sur chaque animation, à l'image près ;
 - **le projet source** ([Remotion](https://www.remotion.dev)), pour modifier un chiffre, un plan ou la musique et relancer le rendu ;
 - sur demande, une **version « effets sonores seuls »** pour ajouter un son tendance sur TikTok ou Reels.
