@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.5.1 (21 octobre 2026)
+
+- Nouveau `scripts/rendu-long.mjs` : rendu par morceaux de 15 s puis assemblage, pour les vidéos longues (un rendu de 58 s d'un bloc était tué faute de mémoire).
+- Cadrage `rasant` adouci (inclinaison 56°, zoom ≤ 4) ; à éviter sur un anneau qui s'anime (rendu 15× plus lent).
+
 ## dashboard-cinematique 1.5.0 (21 octobre 2026)
 
 Le client choisit le nombre de plans de coupe et la durée de sa vidéo.

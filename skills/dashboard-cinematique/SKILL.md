@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : l'interface du client, reproduite à l'identique d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière, musique électro originale avec « drop » et effets sonores calés sur chaque animation. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.5.0"
+  version: "1.5.1"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -119,6 +119,8 @@ Il calcule la durée de chaque plan (multiple de 1,5 s, entre 3 et 6 s), alterne
 | `zoom-avant` | Part du contexte, finit sur l'élément | Révéler un détail |
 | `eloigne` | Part du détail, découvre l'élément entier | Avant la fin |
 | `orbite` | L'interface tourne sous la caméra | Carte compacte, anneau, statistiques |
+
+**Vidéo longue (plus de ~25 s)** : rends brouillon et film par morceaux, sinon le navigateur sature la mémoire et le rendu est tué : `node scripts/rendu-long.mjs brouillon` puis, après repérage et son, `node scripts/rendu-long.mjs final` (→ `out/film.mp4`, son compris). Si un passage rend très lentement (plus de 5 s par image en brouillon), c'est un cadrage trop lourd : constaté avec `rasant` sur un anneau qui s'anime ; donne un autre cadrage à ce plan.
 
 Regarde une image au milieu de chaque plan (`npx remotion still DashboardFilmMuet out/p.png --frame=<début+50> --scale=0.4`) : si un cadrage montre surtout du vide (bord de l'interface) ou une zone sans contenu, change son cadrage ou ajuste `CENTRES`.
 

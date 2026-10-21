@@ -20,7 +20,7 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 | Skill | Style | Idéal pour | Version |
 |---|---|---|---|
-| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée sur un plan 3D incliné avec 7 types de plans de coupe (gros plan, travelling, plongée, rasant, zoom, orbite…) ; nombre de plans et durée au choix ; recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.5.0 |
+| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée sur un plan 3D incliné avec 7 types de plans de coupe (gros plan, travelling, plongée, rasant, zoom, orbite…) ; nombre de plans et durée au choix ; recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.5.1 |
 
 D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
