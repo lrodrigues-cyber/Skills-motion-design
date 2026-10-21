@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : l'interface du client, reproduite à l'identique d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière, musique électro originale avec « drop » et effets sonores calés sur chaque animation. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.4.0"
+  version: "1.4.1"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -44,7 +44,7 @@ Sans capture ni code (« invente un dashboard »), la palette sombre du gabarit 
 | **UI** | L'interface du client **reconstruite en code à l'identique**, à la taille de sa capture (le monde = la capture, en px). C'est la caméra qui grossit | Les tailles d'app réelle donnent l'authenticité ; le code garde le texte net en gros plan |
 | **Animation** | Ease-out marqué ; barres qui poussent en cascade (4–6 images d'écart), courbes tracées point par point, compteurs, lignes en cascade (fondu + flou + glissement) | Arrive vite, se pose longtemps |
 | **Rythme interne** | Il se passe quelque chose **dès la coupe** : les animations du plan sont pré-lancées (horloges négatives, ex. `-6`), le sujet est déjà là · croissances 24–40 images · tout est en place vers l'image 60 · 30 dernières images = dérive calme | Un plan qui commence vide (0,3–0,6 s sans rien) casse la dynamique |
-| **Fin** | **Pas de logo par défaut** (choix de l'utilisateur). `recul` : l'UI entière à plat (50–64 % de la largeur) qui respire ~2,5 s puis s'éteint ; ou `barre` (gros plan sur la barre du haut ou le bouton, qui s'éteint) ; ou `aucune`. Le logo tracé à la comète bleue (V1–V4) reste disponible avec `"logo": true`, seulement si on le demande | V2, V3 = recul ; V1, V4 = barre ; V5 = aucune |
+| **Fin** | **Pas de logo par défaut** (choix de l'utilisateur). `recul` : l'UI entière à plat, **grande** (≈ 88 % de la largeur, `part`), **fixe** ~2,5 s puis s'éteint ; ou `barre` (gros plan sur la barre du haut ou le bouton, qui s'éteint) ; ou `aucune`. Le logo tracé à la comète bleue (V1–V4) reste disponible avec `"logo": true`, seulement si on le demande | V2, V3 = recul ; V1, V4 = barre ; V5 = aucune |
 | **Son** | **Deux profils** (`musique.profil`). **`dynamique` (par défaut, choix de l'utilisateur)** : électro lumineuse et entraînante à 160 BPM, intro filtrée puis **« drop » sur la 1re coupe** (montée, impact, cymbale), accords pincés syncopés, nappe qui respire avec la grosse caisse, et **effets d'interface organiques très denses** (4–5 par seconde) : tics quand un chiffre défile ou un texte arrive, « bloop » de goutte d'eau quand une barre pousse, tintement de verre, whoosh + impact sur chaque coupe. Modèle : vidéo de référence A (promo produit Framer). **`cinema`** : musique de film électronique sombre et effets de cinéma (5 références d'origine). Dans les deux cas, **chaque animation visible a son effet, calé à l'image** : `reperage.mjs` lit le brouillon (bouffées de lumière + activité fine des compteurs et textes) et la bande-son pose les effets dessus, musique creusée dessous | Écouté et mesuré (YAMNet) : voir `references/recette-son.md` |
 
 ## Workflow
@@ -132,7 +132,7 @@ Cadrages qui fonctionnent (testés) :
 
 Ordre conseillé des 5 plans, avec les modules du client : une ouverture calme (en-tête, chiffre clé), un graphique qui se trace, un chiffre fort ou une alerte, un deuxième graphique ou un tableau, puis le bouton d'action. Varie les couleurs d'un plan à l'autre en choisissant des modules différents, jamais en recolorant.
 
-Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera` et `horloges`) ou `aucune` ; `logo` vaut `false` par défaut. Valeurs testées sans logo : `part` 0,56, `extinctionDebut` 78, `extinctionDuree` 36, `total` 120. Avec logo (`"logo": true`) : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150, et remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
+Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera` et `horloges`) ou `aucune` ; `logo` vaut `false` par défaut. Valeurs testées sans logo : `part` 0,88, `extinctionDebut` 78, `extinctionDuree` 36, `total` 120. Avec logo (`"logo": true`) : `logoDebut` 48, `logoDuree` 22, `extinctionDebut` 72, `extinctionDuree` 30, `total` 150, `logoTaille` 150, et remplace `MARQUE_TRACE` (`ui/Marque.tsx`) par le tracé du logo client.
 
 ### 5. Le son : il se cale sur l'image du brouillon
 

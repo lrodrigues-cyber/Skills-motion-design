@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.4.1 (21 octobre 2026)
+
+Corrections relevées sur la vidéo de test Audivo.
+
+- **Mini-tremblements supprimés** : la position de la caméra passait par `left`/`top`, que Chrome arrondit au pixel ; l'image sautait d'un pixel toutes les 3 images. Elle passe désormais entièrement par la transformation 3D (précision sub-pixel). Mesuré : plus aucun saut entre images.
+- **Recul plus grand** : ≈ 88 % de la largeur de l'image (contre 56–60 %), plafonné à 90 % de la hauteur.
+- **Bandes blanches qui clignotaient au recul** : le zoom lent (« respiration ») faisait avancer bords et filets d'1 px par marches. Le recul est désormais fixe et dessiné à 2× puis réduit (texte net). Variation maximale entre deux images : 2,4 au lieu de 230.
+
 ## dashboard-cinematique 1.4.0 (12 octobre 2026)
 
 L'interface du client est reproduite à l'identique : c'est désormais la règle n° 1 du skill.

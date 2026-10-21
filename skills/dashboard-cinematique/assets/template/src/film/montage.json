@@ -67,6 +67,6 @@
       "son": []
     }
   ],
-  "fin": {"type": "recul", "logo": false, "horloges": {"haute": 0}, "part": 0.56, "extinctionDebut": 78, "extinctionDuree": 36, "total": 120, "logoDebut": 48, "logoDuree": 22, "logoTaille": 150},
+  "fin": {"type": "recul", "logo": false, "horloges": {"haute": 0}, "part": 0.88, "extinctionDebut": 78, "extinctionDuree": 36, "total": 120, "logoDebut": 48, "logoDuree": 22, "logoTaille": 150},
   "musique": {"profil": "dynamique", "tonique": "Bb", "mode": "mineur", "queue": true, "volume": 1.0}
 }

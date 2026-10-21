@@ -83,15 +83,17 @@ export const Plateau: React.FC<PlateauProps> = ({
   // tuiles non dessinées (rectangles noirs) quand la mémoire du navigateur sature.
   const monde3D = (r: number) => (
     <AbsoluteFill style={{ perspective: focale, perspectiveOrigin: "50% 50%" }}>
+      {/* Toute la position de la caméra passe par la transformation (précision sub-pixel). Avec left/top,
+          Chrome arrondit au pixel : l'image « saute » d'un pixel toutes les 3 images (tremblement). */}
       <div
         style={{
           position: "absolute",
-          left: width / 2 - cx * r,
-          top: height / 2 - cy * r,
+          left: 0,
+          top: 0,
           width: monde.largeur * r,
           height: monde.hauteur * r,
-          transformOrigin: `${cx * r}px ${cy * r}px`,
-          transform: `rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z / r})`,
+          transformOrigin: "0 0",
+          transform: `translate3d(${width / 2}px, ${height / 2}px, 0) rotateX(${rx}deg) rotateZ(${rz}deg) scale(${z / r}) translate3d(${-cx * r}px, ${-cy * r}px, 0)`,
           transformStyle: "preserve-3d",
         }}
       >
