@@ -52,8 +52,9 @@ export const cadrer = (type: Cadrage, c: Pose, n = 0): Camera => {
     case "rasant":
       return {
         cible: { de: de(c, -80 * s, 6), a: de(c, 80 * s, -4) },
-        zoom: { de: 4.5, a: 4.7 },
-        inclinaison: { de: 63, a: 61 },
+        // zoom ≤ 4 : au-delà, le sur-échantillonnage passe à ×5 et ce plan très incliné sature la mémoire du rendu
+        zoom: { de: 3.8, a: 4.0 },
+        inclinaison: { de: 62, a: 60 },
         rotation: { de: -9 + r / 2, a: -11 + r / 2 },
         nettete: { demiLargeur: 6, fondu: 18 },
       };
