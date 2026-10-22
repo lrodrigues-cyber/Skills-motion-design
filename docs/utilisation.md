@@ -56,9 +56,9 @@ Plus le brief est précis, moins il faut de retouches. Avant d'écrire votre dem
 | 3. Création du projet | Claude | Copie du gabarit, installation de Remotion | 1 à 3 min |
 | 4. Reconstruction de l'interface | Claude | Votre tableau de bord est recréé en code à l'identique, à la taille de la capture, puis comparé automatiquement à la capture jusqu'à correspondre (couleurs, positions, textes) | 10 à 25 min |
 | 5. Montage | Claude | Choix des 5 plans, cadrages, rythme | 2 à 5 min |
-| 6. Brouillon, son et contrôle | Claude | Rendu en demi-résolution, repérage automatique des animations à l'image, bande-son calée dessus, planche-contact, contrôle de la fluidité, corrections | 6 à 12 min |
+| 6. Brouillon, son et contrôle | Claude | Rendu en demi-résolution, repérage automatique des animations à l'image, bande-son calée dessus, planche-contact, contrôle de la fluidité, corrections | 2 à 6 min |
 | 7. Validation | Vous | Vous regardez le brouillon et demandez vos retouches ([prompts de retouche](prompts.md#7-retouches)) | Variable |
-| 8. Rendu final | Claude | Rendu 1920×1080 en qualité maximale (4K en option) | 25 à 35 min sur 4 cœurs, moins sur une machine plus puissante |
+| 8. Rendu final | Claude | Rendu 1920×1080 en qualité maximale (4K en option) | 1 à 2 min sur carte graphique (Windows, macOS), 25 à 35 min en rendu logiciel |
 | 9. Livraison | Claude | Le fichier MP4, la liste des plans et leurs temps, ce qui est fictif, et comment modifier | |
 
 Les durées dépendent de la machine et de la complexité de l'interface. Deux ou trois allers-retours sur le brouillon sont normaux.

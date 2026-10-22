@@ -20,7 +20,7 @@ Un skill par style de montage : image, rythme, caméra, musique et effets sonore
 
 | Skill | Style | Idéal pour | Version |
 |---|---|---|---|
-| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée sur un plan 3D incliné avec 7 types de plans de coupe (gros plan, travelling, plongée, rasant, zoom, orbite…) ; nombre de plans et durée au choix ; recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.5.1 |
+| [**dashboard-cinematique**](skills/dashboard-cinematique/SKILL.md) | **Votre interface, reproduite à l'identique** d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée sur un plan 3D incliné avec 7 types de plans de coupe (gros plan, travelling, plongée, rasant, zoom, orbite…) ; nombre de plans et durée au choix ; recul final sur l'interface entière. Musique électro entraînante avec « drop » sur la 1re coupe et effets d'interface (tics, bloops, verre, whoosh) calés automatiquement sur chaque animation ; profil « cinéma » sombre en option. | SaaS, applications web, back-offices, outils d'analyse, fintech : vidéo de lancement, page d'accueil, publicité, LinkedIn | 1.6.0 |
 
 D'autres styles suivront, chacun dans son propre dossier de `skills/`.
 
@@ -73,7 +73,7 @@ Pour un résultat précis, utilisez le [modèle de brief complet](docs/prompts.m
 
 ### 3. Valider le brouillon, puis lancer le rendu final
 
-Claude rend d'abord un brouillon en demi-résolution (5 à 10 min) et vérifie lui-même la fluidité et la netteté. Vous demandez vos retouches, puis il lance le rendu final (environ 30 min sur un ordinateur à 4 cœurs). Le déroulé complet est décrit dans le [guide d'utilisation](docs/utilisation.md).
+Claude rend d'abord un brouillon en demi-résolution (moins d'une minute sur carte graphique) et vérifie lui-même la fluidité et la netteté. Vous demandez vos retouches, puis il lance le rendu final (1 à 2 min sur carte graphique sous Windows ou macOS, environ 30 min en rendu logiciel sur 4 cœurs). Le déroulé complet est décrit dans le [guide d'utilisation](docs/utilisation.md).
 
 ## Prérequis
 

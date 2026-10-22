@@ -45,7 +45,7 @@ Prêt. Ensuite :
   npm run capture -- infos capture/ecran.png            # lire la capture du client (taille, thème, palette)
   npm run fidelite -- capture/ecran.png                 # l'interface reconstruite est-elle identique à la capture ?
   npx remotion studio                                   # aperçu en direct
-  npm run brouillon                                     # brouillon muet, demi-résolution (~6 min)
+  npm run brouillon                                     # brouillon muet, demi-résolution (< 1 min sur carte graphique)
   npm run reperage && npm run son && npm run sonorise   # effets calés sur les animations → out/brouillon-son.mp4
   npm run controle                                      # fluidité des coupes
   npx remotion render DashboardFilm out/film.mp4        # rendu final 1920×1080

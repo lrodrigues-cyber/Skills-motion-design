@@ -82,18 +82,21 @@ Claude Code télécharge le catalogue avec `git`, sans pouvoir vous demander de 
 <details>
 <summary><b>Le rendu final est très long</b></summary>
 
-C'est normal : 25 à 35 min sur 4 cœurs pour 20 s. Chaque image combine trois niveaux de flou et un sur-échantillonnage qui garde le texte net en très gros plan.
+Le rendu passe par la carte graphique : comptez 1 à 2 min pour 20 s sous Windows ou macOS. S'il prend 25 à 35 min, c'est qu'il tourne en rendu logiciel (Linux, machine virtuelle, session cloud, pilote graphique absent) : chaque image combine alors trois niveaux de flou et un sur-échantillonnage qui garde le texte net en très gros plan.
+
+- Vérifiez l'accélération : *« Lance `npx remotion gpu` et dis-moi si le rendu est accéléré. »*
+- Sous Linux avec une carte graphique, demandez : *« Lance le rendu avec REMOTION_GL=angle-egl. »*
 
 - Travaillez sur des **brouillons** en demi-résolution (5 à 10 min), et ne lancez le rendu final qu'une fois tout validé.
 - Fermez les applications lourdes pendant le rendu.
-- Le projet rend 2 images en parallèle par défaut. Sur une machine à 8 cœurs et 16 Go de RAM ou plus, demandez : *« Lance le rendu avec REMOTION_CONCURRENCY=4. »*
+- En rendu logiciel, le projet rend 2 images en parallèle (4 sur carte graphique). Sur une machine à 8 cœurs et 16 Go de RAM ou plus, demandez : *« Lance le rendu avec REMOTION_CONCURRENCY=4. »*
 
 </details>
 
 <details>
 <summary><b>Le rendu plante (mémoire), ou des rectangles noirs apparaissent sur certaines images</b></summary>
 
-Le navigateur manque de mémoire graphique. Demandez : *« Relance le rendu avec REMOTION_CONCURRENCY=1, puis passe le contrôle de fluidité. »*
+Le navigateur manque de mémoire graphique. Demandez : *« Relance le rendu avec REMOTION_CONCURRENCY=1, puis passe le contrôle de fluidité. »* Si le défaut persiste, rendez sans la carte graphique : *« Relance le rendu avec REMOTION_GL=swangle. »*
 
 Le script `scripts/controle.mjs` détecte automatiquement ces images ratées.
 

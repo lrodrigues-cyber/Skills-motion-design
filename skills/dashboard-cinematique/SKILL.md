@@ -3,7 +3,7 @@ name: dashboard-cinematique
 description: "Crée des vidéos motion design « dashboard cinématique » (MP4, Remotion) : l'interface du client, reproduite à l'identique d'après sa capture (couleurs, modules, textes, icônes ; thème clair ou sombre), filmée en très gros plan sur un plan 3D incliné, profondeur de champ courte, texte net, plans de 3 s en coupe franche fluide, recul final sur l'UI entière, musique électro originale avec « drop » et effets sonores calés sur chaque animation. Utilise ce skill dès que l'utilisateur veut animer un dashboard, une app web, un back-office, un écran SaaS ou des graphiques/KPI en vidéo, même s'il dit seulement « vidéo de mon dashboard », « animer mon interface », « pub pour mon SaaS », « vidéo produit sombre/cinématique », « UI animation », « dashboard motion », « comme ces vidéos TikTok de dashboard », ou partage des vidéos de référence de ce genre."
 compatibility: "Exécution de code avec Node.js 18+ et npm, accès réseau pour installer Remotion et Chrome Headless Shell, ffmpeg pour les contrôles. Conçu et testé avec Claude Code."
 metadata:
-  version: "1.5.1"
+  version: "1.6.0"
   depot: "https://github.com/lrodrigues-cyber/Skills-motion-design"
 ---
 
@@ -120,7 +120,7 @@ Il calcule la durée de chaque plan (multiple de 1,5 s, entre 3 et 6 s), alterne
 | `eloigne` | Part du détail, découvre l'élément entier | Avant la fin |
 | `orbite` | L'interface tourne sous la caméra | Carte compacte, anneau, statistiques |
 
-**Vidéo longue (plus de ~25 s)** : rends brouillon et film par morceaux, sinon le navigateur sature la mémoire et le rendu est tué : `node scripts/rendu-long.mjs brouillon` puis, après repérage et son, `node scripts/rendu-long.mjs final` (→ `out/film.mp4`, son compris). Si un passage rend très lentement (plus de 5 s par image en brouillon), c'est un cadrage trop lourd : constaté avec `rasant` sur un anneau qui s'anime ; donne un autre cadrage à ce plan.
+**Vidéo longue (plus de ~25 s)** : rends brouillon et film par morceaux, sinon le navigateur sature la mémoire et le rendu est tué : `node scripts/rendu-long.mjs brouillon` puis, après repérage et son, `node scripts/rendu-long.mjs final` (→ `out/film.mp4`, son compris). Si un passage rend très lentement (plus de 0,5 s par image en brouillon sur carte graphique, 5 s en rendu logiciel), c'est un cadrage trop lourd : constaté avec `rasant` sur un anneau qui s'anime ; donne un autre cadrage à ce plan.
 
 Regarde une image au milieu de chaque plan (`npx remotion still DashboardFilmMuet out/p.png --frame=<début+50> --scale=0.4`) : si un cadrage montre surtout du vide (bord de l'interface) ou une zone sans contenu, change son cadrage ou ajuste `CENTRES`.
 
@@ -164,7 +164,7 @@ Fin (`fin`) : `type` vaut `recul`, `barre` (+ `camera` et `horloges`) ou `aucune
 Les effets sonores ne se placent **pas à la main** : ils se calent sur ce qui s'anime réellement à l'écran. Après chaque brouillon :
 
 ```bash
-npm run brouillon     # rendu muet en demi-résolution (~6 min)
+npm run brouillon     # rendu muet en demi-résolution (< 1 min sur carte graphique, ~6 min sans)
 npm run reperage      # lit out/brouillon.mp4 : chaque bouffée de lumière = un événement → src/film/reperage.json
 npm run son           # musique calée sur les coupes + un effet par événement, qui suit la courbe de l'animation
 npm run sonorise      # pose la bande-son sur le brouillon → out/brouillon-son.mp4 (à écouter)
@@ -203,7 +203,7 @@ Pour une image précise : `npx remotion still DashboardFilm out/img.png --frame=
 npm run son                                        # doit tourner SANS avertissement de repérage
 npx remotion render DashboardFilm out/film.mp4     # 1920×1080, H.264 CRF 16, BT.709 (remotion.config.ts)
 ```
-Compte ~25–35 min sur 4 cœurs pour 20 s (3 niveaux de flou + sur-échantillonnage ; le brouillon à `--scale=0.5` prend ~6 min). Pour une qualité maximale (4K), ajoute `--scale=2` (≈ 4× plus long). Livre :
+**Le rendu passe par la carte graphique** (`remotion.config.ts` : `angle` sous Windows et macOS, 4 rendus en parallèle) : ~1 à 2 min pour 20 s en 1080p (mesuré : 570 images en 78 s contre 646 s en rendu logiciel, images identiques à l'œil), brouillon < 1 min. Sous Linux, ou si le GPU donne une image anormale (tuiles noires, rendu figé), rends en logiciel : `REMOTION_GL=swangle` devant la commande (~25–35 min pour 20 s sur 4 cœurs, l'ancien comportement) ; sur une machine Linux avec carte graphique, `REMOTION_GL=angle-egl`. `npx remotion gpu` montre si l'accélération est active. Pour une qualité maximale (4K), ajoute `--scale=2` (≈ 4× plus long). Livre :
 - le fichier ;
 - la liste des plans avec leurs temps ;
 - ce qui est fictif (marque, données) ;
