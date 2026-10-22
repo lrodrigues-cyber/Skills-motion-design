@@ -195,7 +195,7 @@ Formulations qui fonctionnent bien :
 1. **Un élément par plan.** « La courbe des revenus », pas « la courbe et les KPI ».
 2. **De vrais chiffres, arrondis.** « 128,4 k€ » se lit en 3 s, « 128 417,36 € » non.
 3. **Laissez les choix de caméra et de lumière au skill.** Les cadrages sont testés. Décrivez ce que vous voulez montrer, pas comment le filmer.
-4. **Demandez toujours un brouillon d'abord.** Le rendu final prend 25 à 35 min : il se lance une fois tout validé.
+4. **Demandez toujours un brouillon d'abord.** Le rendu final est plus long (1 à 2 min sur carte graphique, 25 à 35 min sans) : il se lance une fois tout validé.
 5. **Regroupez les retouches** dans un message numéroté plutôt qu'une par une.
 6. **Joignez les fichiers dans le même message** que la demande : captures, logo, musique.
 7. **Une capture de la page entière, telle quelle.** Pas de recadrage, pas de redimensionnement, pas de capture de capture : c'est la référence au pixel près.

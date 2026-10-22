@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables des skills de ce dépôt. Les versions suivent le [versionnage sémantique](https://semver.org/lang/fr/) : un changement de la recette qui modifie le rendu des vidéos existantes augmente la version mineure, une correction augmente la version de correctif.
 
+## dashboard-cinematique 1.6.0 (22 octobre 2026)
+
+Rendu par la carte graphique : 8 à 13 fois plus rapide, sans perte de qualité.
+
+- **Rendu GPU** (`remotion.config.ts`) : `angle` sous Windows et macOS (Direct3D / Metal), 4 rendus en parallèle. Mesuré sur le film d'exemple (570 images 1080p, RTX 4060) : **646 s → 78 s** pour le rendu final, **365 s → 28 s** pour le brouillon. Images comparées une à une au rendu logiciel : PSNR 40–48 dB, écart moyen < 1,7/255 (anti-crénelage sub-pixel du texte), aucune tuile manquante, même fluidité d'une image à l'autre (irrégularité 0,043 dans les deux cas).
+- `REMOTION_GL` choisit le moteur : `swangle` rend en logiciel (l'ancien comportement, 2 rendus en parallèle), `angle-egl` pour Linux avec carte graphique. Linux reste en rendu logiciel par défaut.
+- `scripts/rendu-long.mjs` empaquette le projet une seule fois au lieu de le faire à chaque morceau.
+- Correction Windows : `rendu-long.mjs` et `fidelite.mjs` lançaient `npx` directement, ce qui échoue sous Windows (`spawn npx ENOENT`) ; ils lancent désormais le CLI Remotion par `node`.
+
 ## dashboard-cinematique 1.5.1 (21 octobre 2026)
 
 - Nouveau `scripts/rendu-long.mjs` : rendu par morceaux de 15 s puis assemblage, pour les vidéos longues (un rendu de 58 s d'un bloc était tué faute de mémoire).

@@ -40,7 +40,8 @@ let rendu = opt("rendu");
 if (!rendu) {
   rendu = path.join(dossier, "rendu.png");
   console.log("Rendu du monde à plat (MondeAPlat)…");
-  execFileSync("npx", ["remotion", "still", "MondeAPlat", rendu, "--frame=0", "--log=error"], { cwd: racine, stdio: ["ignore", "ignore", "inherit"] });
+  // CLI Remotion lancé par node (execFileSync("npx") échoue sous Windows : npx y est un .cmd)
+  execFileSync(process.execPath, [path.join(racine, "node_modules/@remotion/cli/remotion-cli.js"), "still", "MondeAPlat", rendu, "--frame=0", "--log=error"], { cwd: racine, stdio: ["ignore", "ignore", "inherit"] });
 }
 
 const R = lire(rendu);

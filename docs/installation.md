@@ -24,7 +24,7 @@ Le skill fait travailler Claude sur votre machine : il crée un projet vidéo, i
 | Environnement | Installation | Rendu vidéo | Recommandation |
 |---|---|---|---|
 | **Claude Code** : terminal, application de bureau, extension VS Code ou JetBrains | Méthode A, B ou C | Sur votre machine, sans limite de durée | **Recommandé**. C'est l'environnement dans lequel le skill a été conçu et testé |
-| **Claude Code sur le web** (sessions cloud) | Méthode C (skill dans le dépôt) ou D (skill synchronisé depuis claude.ai) | Dans le conteneur cloud | Fonctionne. Le rendu final occupe la session pendant 25 à 35 min |
+| **Claude Code sur le web** (sessions cloud) | Méthode C (skill dans le dépôt) ou D (skill synchronisé depuis claude.ai) | Dans le conteneur cloud | Fonctionne. Sans carte graphique, le rendu final occupe la session pendant 25 à 35 min |
 | **claude.ai** (web, bureau, mobile) | Méthode D | Dans le bac à sable d'exécution de code | Possible, mais non garanti : l'accès réseau et la durée d'exécution du bac à sable peuvent bloquer l'installation de Remotion ou le rendu final |
 
 > [!TIP]
@@ -58,7 +58,7 @@ Fermez puis rouvrez le terminal après l'installation pour que les commandes soi
 > [!NOTE]
 > Sous Linux, Chrome Headless Shell a besoin de quelques bibliothèques système (`libnss3`, `libgbm1`, `libasound2`…). La liste à jour est sur la page [Linux dependencies](https://www.remotion.dev/docs/miscellaneous/linux-dependencies) de Remotion. macOS et Windows n'ont rien à ajouter.
 
-**Configuration conseillée** : 8 cœurs et 16 Go de RAM. Avec 4 cœurs et 8 Go, tout fonctionne, mais le rendu final prend 25 à 35 min. Prévoyez 1,5 Go d'espace libre par projet vidéo.
+**Configuration conseillée** : 8 cœurs et 16 Go de RAM. Une carte graphique (Windows ou macOS) ramène le rendu final à 1 à 2 min. Sans carte graphique, avec 4 cœurs et 8 Go, tout fonctionne, mais le rendu final prend 25 à 35 min. Prévoyez 1,5 Go d'espace libre par projet vidéo.
 
 ## 3. Méthode A : plugin Claude Code (recommandée)
 
@@ -155,7 +155,7 @@ Les libellés ci-dessus sont ceux de l'interface anglaise de claude.ai. L'interf
 Un skill activé sur claude.ai est aussi synchronisé dans les sessions cloud de Claude Code et dans Cowork.
 
 > [!WARNING]
-> Dans claude.ai, Claude travaille dans un bac à sable. Pour que le skill fonctionne, ce bac à sable doit pouvoir télécharger les paquets npm et Chrome Headless Shell, et le rendu final dure 25 à 35 min. Si l'installation ou le rendu échoue, demandez un rendu en qualité brouillon, ou passez à Claude Code.
+> Dans claude.ai, Claude travaille dans un bac à sable. Pour que le skill fonctionne, ce bac à sable doit pouvoir télécharger les paquets npm et Chrome Headless Shell, et le rendu final, sans carte graphique, dure 25 à 35 min. Si l'installation ou le rendu échoue, demandez un rendu en qualité brouillon, ou passez à Claude Code.
 
 ## 7. Vérifier l'installation
 
