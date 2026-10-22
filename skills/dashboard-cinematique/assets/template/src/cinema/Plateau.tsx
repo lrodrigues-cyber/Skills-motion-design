@@ -110,6 +110,14 @@ export const Plateau: React.FC<PlateauProps> = ({
   const bande = (demi: number, f: number) =>
     `linear-gradient(${angle}deg, transparent ${centre - demi - f}%, #000 ${centre - demi}%, #000 ${centre + demi}%, transparent ${centre + demi + f}%)`;
   const masqueNet = bande(demiLargeur, fondu * 0.55);
+  // Découpe de la couche à la seule bande où son masque est visible (bande horizontale, angle 180°) :
+  // Chrome ne dessine plus le reste du monde sur-échantillonné (invisible de toute façon). Image identique.
+  const bandeVisible = (demi: number, f: number) => {
+    if (angle !== 180) return undefined;
+    const haut = Math.max(0, centre - demi - f - 1),
+      bas = Math.max(0, 100 - (centre + demi + f + 1));
+    return `inset(${haut}% 0 ${bas}% 0)`;
+  };
   const masqueMoyen = bande(demiLargeur + fondu * 0.45, fondu * 0.9);
   // Le lointain (haut) et le premier plan (bas) tombent dans l'ombre : la lumière est posée sur
   // la zone nette, le flou ne doit jamais être plus visible que le sujet.
@@ -121,9 +129,9 @@ export const Plateau: React.FC<PlateauProps> = ({
       {/* très flou : tout ce qui est loin du plan de mise au point */}
       <AbsoluteFill style={{ filter: `blur(${flou + flouEntree * 0.5}px)` }}>{monde3D(1)}</AbsoluteFill>
       {/* légèrement flou : la transition */}
-      <AbsoluteFill style={{ WebkitMaskImage: masqueMoyen, maskImage: masqueMoyen, filter: `blur(${flou * 0.35 + flouEntree * 0.6}px)` }}>{monde3D(Math.min(2, Z))}</AbsoluteFill>
+      <AbsoluteFill style={{ WebkitMaskImage: masqueMoyen, maskImage: masqueMoyen, clipPath: bandeVisible(demiLargeur + fondu * 0.45, fondu * 0.9), filter: `blur(${flou * 0.35 + flouEntree * 0.6}px)` }}>{monde3D(Math.min(2, Z))}</AbsoluteFill>
       {/* net : la bande de mise au point */}
-      <AbsoluteFill style={{ WebkitMaskImage: masqueNet, maskImage: masqueNet, filter: flouEntree > 0.05 ? `blur(${flouEntree}px)` : undefined }}>
+      <AbsoluteFill style={{ WebkitMaskImage: masqueNet, maskImage: masqueNet, clipPath: bandeVisible(demiLargeur, fondu * 0.55), filter: flouEntree > 0.05 ? `blur(${flouEntree}px)` : undefined }}>
         {monde3D(Z)}
       </AbsoluteFill>
       <AbsoluteFill style={{ background: ombre, pointerEvents: "none" }} />
